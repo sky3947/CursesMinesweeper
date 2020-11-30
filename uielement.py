@@ -5,11 +5,13 @@ extended to provide a variety of interactable UI.
 
 from enum import Enum
 from abc import ABC, abstractmethod
+from utility import Point
 
 class UIType(Enum):
     """An Enum used to easily differentiate UIElements."""
     TextBox = 0
-    Button = 1
+    LongTextBox = 1
+    Button = 2
 
 class UIElement(ABC):
     """UI elements provide methods for user interaction."""
@@ -69,3 +71,35 @@ class TextBox(UIElement):
 
     def to_tuples(self):
         return [(self.point, self.text, self.color)]
+
+class LongTextBox(UIElement):
+    """
+    A LongTextBox is a UIElement used to display a block of text.
+    """
+    def __init__(self, point, lines):
+        # Give this UIElement the LongTextBox UI type.
+        super().__init__(UIType.LongTextBox)
+
+        # The x and y-positions to start drawing text.
+        self.point = point
+
+        # The block of text to display.
+        self.lines = lines
+
+        # The default color.
+        self.color = 0
+
+    def set_color(self, color):
+        """
+        Sets the LongTextBox's color.
+
+        Args:
+            color (int): The new color.
+        """
+        self.color = color
+
+    def to_tuples(self):
+        x = self.point.x
+        y = self.point.y
+        lines = enumerate(self.lines)
+        return [(Point(x, y+dy), line, self.color) for dy, line in lines]
