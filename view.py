@@ -20,6 +20,9 @@ class View(ABC):
         # The hovered input when entering this View.
         self.first_inp = ""
 
+        # A list of UIElements in the View.
+        self.uielements = []
+
         # True if the user is using interactable UI.
         self.using_ui = False
 
@@ -27,9 +30,12 @@ class View(ABC):
     def parse(self, inp):
         """A scene could parse input and return an action."""
 
-    @abstractmethod
     def draw(self):
         """A scene could have graphics."""
+        self.graphics.clear()
+
+        for uielement in self.uielements:
+            uielement.draw(self.graphics)
 
     def loop(self):
         """The main loop of a View."""
