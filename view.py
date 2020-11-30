@@ -1,5 +1,5 @@
 """
-This class is the view for the Minesweeper program.
+This class is the View for the Minesweeper program.
 """
 
 from abc import ABC, abstractmethod
@@ -10,14 +10,18 @@ class View(ABC):
     Translates model information into human-readable information by
     drawing graphics. Also passes user input onto the controller.
     """
-    # A View communicates with a controller.
-    controller = None
+    def __init__(self, controller):
+        # A View communicates with a controller.
+        self.controller = controller
 
-    # A View needs to draw graphics.
-    graphics = None
+        # A View needs to draw graphics.
+        self.graphics = controller.graphics
 
-    # The hovered input when entering this View.
-    first_inp = ""
+        # The hovered input when entering this View.
+        self.first_inp = ""
+
+        # True if the user is using interactable UI.
+        self.using_ui = False
 
     @abstractmethod
     def parse(self, inp):
