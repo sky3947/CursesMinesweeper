@@ -5,6 +5,7 @@ start, or delete a Minesweeper game.
 
 from view import View
 from utility import Action, Point
+from uielement import TextBox
 
 class MainMenuView(View):
     """
@@ -12,21 +13,10 @@ class MainMenuView(View):
     drawing graphics. Also passes user input onto the controller.
     """
     def __init__(self, controller):
-        """
-        Constructs an instance of MainMenuView and returns it.
+        super().__init__(controller)
 
-        Args:
-            controller (Controller): The controller to pass user
-                interactions to.
-        """
-        # The View delivers user input to the Controller.
-        self.controller = controller
-
-        # The View uses Graphics to draw.
-        self.graphics = controller.graphics
-
-        # The hovered input when entering the main menu.
-        self.first_inp = "m"
+        self.test_text = TextBox(Point(0, 10), "test textbox")
+        self.test_text.set_color(self.graphics.BRIGHT)
 
     def parse(self, inp):
         """
@@ -48,4 +38,4 @@ class MainMenuView(View):
         graph = self.graphics
         graph.clear()
 
-        graph.draw(Point(0, 0), "main menu reached", graph.BRIGHT)
+        self.test_text.draw(graph)
