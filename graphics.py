@@ -80,18 +80,18 @@ class Graphics:
         """
         return chr(self.screen.getch())
 
-    @staticmethod
-    def win_draw(window, point, inp, color=BRIGHT):
-        """
-        Draws on a specified window.
+    # @staticmethod
+    # def win_draw(window, point, inp, color=BRIGHT):
+    #     """
+    #     Draws on a specified window.
 
-        Args:
-            window (_CursesWindow): The curses window to draw on.
-            point (Point): The x and y location to draw at.
-            inp (str): The string to draw.
-            color (int, optional): The color to use. Defaults to BRIGHT.
-        """
-        window.addstr(point.y, point.x, inp, color)
+    #     Args:
+    #         window (_CursesWindow): The curses window to draw on.
+    #         point (Point): The x and y location to draw at.
+    #         inp (str): The string to draw.
+    #         color (int, optional): The color to use. Defaults to BRIGHT.
+    #     """
+    #     window.addstr(point.y, point.x, inp, color)
 
     def draw(self, point, inp, color=BRIGHT):
         """
@@ -102,18 +102,15 @@ class Graphics:
             inp (str): The string to draw.
             color (int, optional): the color to use. Defaults to BRIGHT.
         """
-        self.win_draw(self.screen, point, inp, color)
+        self.screen.addstr(point.y, point.x, inp, color)
 
-    def clear(self, window=None, color=BRIGHT):
+    def clear(self, color=BRIGHT):
         """
-        Clears a curses window.
+        Clears the curses window.
 
         Args:
-            window (_CursesWindow, optional): The window to clear.
-                Defaults to self.screen.
             color (int, optional): the color to use. Defaults to BRIGHT.
         """
-        window = window or self.screen
         for i in range(self.HEIGHT):
             self.draw(Point(0, i), " "*self.LENGTH, color)
 
