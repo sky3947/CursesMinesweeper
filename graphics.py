@@ -115,12 +115,12 @@ class Graphics:
             self.draw(Point(0, i), " "*self.LENGTH, color)
 
     @staticmethod
-    def center_just(y_pos, inp, win_len=LENGTH):
+    def center_just(y, inp, win_len=LENGTH):
         """
         Center-justifies an input text.
 
         Args:
-            y_pos (int): The y-position to draw at.
+            y (int): The y-position to draw at.
             input (str): The string to center-justify.
             win_len (int, optional): The length of the window. Defaults
                 to self.LENGTH.
@@ -129,15 +129,15 @@ class Graphics:
             (int, int, str): A tuple representing the center-justified
                 input text (x, y, inp).
         """
-        return ((win_len - len(inp))//2, y_pos, inp)
+        return (Point((win_len - len(inp))//2, y), inp)
 
     @staticmethod
-    def right_justify(y_pos, inp, win_len=LENGTH):
+    def right_justify(y, inp, win_len=LENGTH):
         """
         Right-justifies an input text.
 
         Args:
-            y_pos (int): The y-position to draw at.
+            y (int): The y-position to draw at.
             inp (str): The string to right-justify.
             win_len (int, optional): The length of the window. Defaults
                 to LENGTH.
@@ -146,4 +146,4 @@ class Graphics:
             (int, int, str): A tuple representing the right-justified
                 input text (x, y, inp).
         """
-        return ((win_len - len(inp)), y_pos, inp)
+        return (Point((win_len - len(inp)), y), inp)
