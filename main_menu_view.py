@@ -75,7 +75,7 @@ class MainMenuView(View):
         Creates the controls bar to display controls.
         """
         # Color options.
-        color = self.graphics.bright
+        color = self.graphics.BRIGHT
 
         text = [
             "_"*self.graphics.LENGTH,
@@ -103,7 +103,7 @@ class MainMenuView(View):
         Creates the info box to explain each Button.
         """
         # Color options.
-        color = self.graphics.bright
+        color = self.graphics.BRIGHT
 
         self.info_box = TextBox(Point(1, 22))
         self.info_box.set_color(color)
@@ -119,9 +119,9 @@ class MainMenuView(View):
         Initializes and adds Buttons.
         """
         # Color options.
-        color = self.graphics.bright
-        hovered_color = self.graphics.highlight
-        disabled_color = self.graphics.dim
+        color = self.graphics.BRIGHT
+        hovered_color = self.graphics.HIGHLIGHT
+        disabled_color = self.graphics.DIM
 
         # Delete save Button.
         text = "Delete Save"
@@ -163,7 +163,7 @@ class MainMenuView(View):
         Creates the MINESWEEPER banner.
         """
         # Color options.
-        color = self.graphics.bright
+        color = self.graphics.BRIGHT
 
         banner = [
 			R"  __ __ _ __  _ ___  __  _   _ ___ ___ ___ ___ ___  ",

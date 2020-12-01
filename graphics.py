@@ -51,19 +51,19 @@ class Graphics:
         curses.init_pair(5, 231, 1)
 
         # Black text color on white background.
-        self.highlight = curses.color_pair(1)
+        self.HIGHLIGHT = curses.color_pair(1)
 
         # White text on black background.
-        self.bright = curses.color_pair(2)
+        self.BRIGHT = curses.color_pair(2)
 
         # Gray text color on black background.
-        self.dim = curses.color_pair(3)
+        self.DIM = curses.color_pair(3)
 
         # Black text color on black background.
-        self.darkest = curses.color_pair(4)
+        self.DARKEST = curses.color_pair(4)
 
         # White text color on red background.
-        self.mine = curses.color_pair(5)
+        self.MINE = curses.color_pair(5)
 
     def get_inp(self):
         """
@@ -74,19 +74,6 @@ class Graphics:
         """
         return chr(self.screen.getch())
 
-    # @staticmethod
-    # def win_draw(window, point, inp, color=BRIGHT):
-    #     """
-    #     Draws on a specified window.
-
-    #     Args:
-    #         window (_CursesWindow): The curses window to draw on.
-    #         point (Point): The x and y location to draw at.
-    #         inp (str): The string to draw.
-    #         color (int, optional): The color to use. Defaults to BRIGHT.
-    #     """
-    #     window.addstr(point.y, point.x, inp, color)
-
     def draw(self, point, inp, color=None):
         """
         Draws on the curses standard screen.
@@ -96,7 +83,7 @@ class Graphics:
             inp (str): The string to draw.
             color (int, optional): the color to use. Defaults to BRIGHT.
         """
-        self.screen.addstr(point.y, point.x, inp, color or self.bright)
+        self.screen.addstr(point.y, point.x, inp, color or self.BRIGHT)
 
     def clear(self, color=None):
         """
@@ -106,7 +93,7 @@ class Graphics:
             color (int, optional): the color to use. Defaults to BRIGHT.
         """
         for i in range(self.HEIGHT):
-            self.draw(Point(0, i), " "*self.LENGTH, color or self.bright)
+            self.draw(Point(0, i), " "*self.LENGTH, color or self.BRIGHT)
 
     @staticmethod
     def center_just(y, inp, win_len=LENGTH):
