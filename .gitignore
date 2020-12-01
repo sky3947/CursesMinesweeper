@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 workspace.code-workspace
 .vscode/settings.json
+saves/minefield.save
