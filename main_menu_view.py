@@ -61,6 +61,8 @@ class MainMenuView(View):
 
         # Keep track of Buttons.
         self.buttons = [continue_button, new_game_button, delete_save_button]
+
+        self.selected = 0
         if self.controller.has_saved_game():
             self.selected = 0
             continue_button.set_hovered(True)
