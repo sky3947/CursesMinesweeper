@@ -41,27 +41,34 @@ class MainMenuView(View):
         centered_point, _ = grap.center_just(15, text)
         delete_save_button = Button(centered_point, text)
         delete_save_button.set_color(color)
-        delete_save_button.set_hovered(hovered_color)
+        delete_save_button.set_hovered_color(hovered_color)
         delete_save_button.set_disabled_color(disabled_color)
         self.uielements.append(delete_save_button)
 
         # Continue Button.
         continue_button = Button(Point(centered_point.x, 13), "Continue")
         continue_button.set_color(color)
-        continue_button.set_hovered(hovered_color)
+        continue_button.set_hovered_color(hovered_color)
         continue_button.set_disabled_color(disabled_color)
         self.uielements.append(continue_button)
 
         # New game Button.
         new_game_button = Button(Point(centered_point.x, 14), "New Game")
         new_game_button.set_color(color)
-        new_game_button.set_hovered(hovered_color)
+        new_game_button.set_hovered_color(hovered_color)
         new_game_button.set_disabled_color(disabled_color)
         self.uielements.append(new_game_button)
 
         # Keep track of Buttons.
-        self.selected = 0
         self.buttons = [continue_button, new_game_button, delete_save_button]
+        if self.controller.has_saved_game():
+            self.selected = 0
+            continue_button.set_hovered(True)
+        else:
+            self.selected = 1
+            new_game_button.set_hovered(True)
+            continue_button.set_enabled(False)
+            delete_save_button.set_enabled(False)
 
         # Make information box. (Explains what the hovered Button does.)
         self.info_box = TextBox(Point(1, 22))
