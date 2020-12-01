@@ -3,7 +3,7 @@ This class is the View for the Minesweeper program.
 """
 
 from abc import ABC, abstractmethod
-from utility import Flow
+from utility import Flow, Point
 
 class View(ABC):
     """
@@ -23,8 +23,8 @@ class View(ABC):
         # A list of UIElements in the View.
         self.uielements = []
 
-        # True if the user is using interactable UI.
-        self.using_ui = False
+        # The interactable UI currently being focused.
+        self.focused_ui = None
 
     @abstractmethod
     def parse(self, inp):
@@ -36,6 +36,10 @@ class View(ABC):
 
         for uielement in self.uielements:
             uielement.draw(self.graphics)
+
+        # Draw last valid input.
+        text = "({})".format(self.controller.get_last_inp())
+        self.graphics.draw(Point(1, self.graphics.HEIGHT-1), text)
 
     def loop(self):
         """The main loop of a View."""

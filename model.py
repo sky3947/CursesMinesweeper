@@ -25,9 +25,6 @@ class Model:
         # The controller class for user interaction.
         self.controller = Controller(self, screen)
 
-        # The last valid input by the user.
-        self.last_inp = ""
-
         # Controls the game loop.
         self.running = True
 
@@ -47,7 +44,7 @@ class Model:
         """
         Starts the game loop at the main menu view.
         """
-        self.change_view(MainMenuView(self.controller))
+        self.controller.change_view(MainMenuView(self.controller))
         self.loop()
 
     def stop_game_loop(self):

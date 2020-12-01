@@ -25,6 +25,27 @@ class Controller:
         # The Graphics class for user input and drawing.
         self.graphics = Graphics(screen)
 
+        # The last valid input by the user.
+        self.last_inp = ""
+
+    def set_last_inp(self, inp):
+        """
+        Sets the last valid input.
+
+        Args:
+            inp (str): The last valid input.
+        """
+        self.last_inp = inp
+
+    def get_last_inp(self):
+        """
+        Gets the last valid input.
+
+        Returns:
+            str: The last valid input.
+        """
+        return self.last_inp
+
     def stop_game_loop(self):
         """
         Tells the model to stop the game loop.
@@ -39,6 +60,7 @@ class Controller:
             view (View): The next view.
         """
         self.model.change_view(view)
+        self.set_last_inp(view.first_inp)
 
     def act(self, action):
         """
