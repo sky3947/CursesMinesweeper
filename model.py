@@ -2,6 +2,7 @@
 This class is the model for the Minesweeper program.
 """
 
+import os
 from controller import Controller
 from main_menu_view import MainMenuView
 
@@ -30,6 +31,15 @@ class Model:
 
         # The current view.
         self.view = None
+
+    def has_saved_game(self):
+        """
+        Checks if there's a save file.
+
+        Returns:
+            bool: True if a save file exists, False otherwise.
+        """
+        return os.path.exists(self.SAVE_FILE)
 
     def change_view(self, view):
         """

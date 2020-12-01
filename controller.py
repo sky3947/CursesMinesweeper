@@ -28,6 +28,15 @@ class Controller:
         # The last valid input by the user.
         self.last_inp = ""
 
+    def has_saved_game(self):
+        """
+        Asks the model if there's a saved game.
+
+        Returns:
+            bool: True if there's a saved game, False otherwise.
+        """
+        return self.model.has_saved_game()
+
     def set_last_inp(self, inp):
         """
         Sets the last valid input.
