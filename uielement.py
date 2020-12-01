@@ -250,7 +250,7 @@ class Button(UIElement):
         Returns:
             bool: The hovered flag.
         """
-        return self.hovered_color
+        return self.hovered
 
     def is_enabled(self):
         """
