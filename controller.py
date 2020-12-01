@@ -28,6 +28,12 @@ class Controller:
         # The last valid input by the user.
         self.last_inp = ""
 
+        # Map of actions to functions.
+        self.actions = {
+            "quit": self.action_quit,
+            "set last input": self.action_set_last_input
+        }
+
     def has_saved_game(self):
         """
         Asks the model if there's a saved game.
@@ -81,4 +87,35 @@ class Controller:
         Returns:
             Flow: The control flow to pass to the View.
         """
+        fun = self.actions.get(action.primary, lambda: Flow.PASS)
+        try:
+            return fun(*action.secondary)
+        except TypeError:
+            return Flow.PASS
+
+    #
+    # Actions functions.
+    #
+
+    @staticmethod
+    def action_quit():
+        """
+        Sends the control flow to quit the game.
+
+        Returns:
+            Flow: Send Flow.BREAK.
+        """
+        return Flow.BREAK
+
+    def action_set_last_input(self, inp):
+        """
+        Sets the last valid input.
+
+        Args:
+            inp (str): The last valid input.
+
+        Returns:
+            Flow: Send Flow.PASS.
+        """
+        self.set_last_inp(inp)
         return Flow.PASS
