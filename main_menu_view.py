@@ -58,7 +58,7 @@ class MainMenuView(View):
             # Find the next enabled Button.
             cur_but_ind = self.buttons.index(self.selected)
             next_but_ind = (cur_but_ind + movement) % len(self.buttons)
-            while not self.buttons[next_but_ind].is_enabled:
+            while not self.buttons[next_but_ind].is_enabled():
                 next_but_ind = (next_but_ind + movement) % len(self.buttons)
             next_enabled_button = self.buttons[next_but_ind]
 
@@ -75,7 +75,7 @@ class MainMenuView(View):
         Creates the controls bar to display controls.
         """
         # Color options.
-        color = self.graphics.BRIGHT
+        color = self.graphics.bright
 
         text = [
             "_"*self.graphics.LENGTH,
@@ -103,7 +103,7 @@ class MainMenuView(View):
         Creates the info box to explain each Button.
         """
         # Color options.
-        color = self.graphics.BRIGHT
+        color = self.graphics.bright
 
         self.info_box = TextBox(Point(1, 22))
         self.info_box.set_color(color)
@@ -119,9 +119,9 @@ class MainMenuView(View):
         Initializes and adds Buttons.
         """
         # Color options.
-        color = self.graphics.BRIGHT
-        hovered_color = self.graphics.HIGHLIGHT
-        disabled_color = self.graphics.DIM
+        color = self.graphics.bright
+        hovered_color = self.graphics.highlight
+        disabled_color = self.graphics.dim
 
         # Delete save Button.
         text = "Delete Save"
@@ -163,7 +163,7 @@ class MainMenuView(View):
         Creates the MINESWEEPER banner.
         """
         # Color options.
-        color = self.graphics.BRIGHT
+        color = self.graphics.bright
 
         banner = [
 			R"  __ __ _ __  _ ___  __  _   _ ___ ___ ___ ___ ___  ",
