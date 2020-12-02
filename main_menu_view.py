@@ -13,6 +13,12 @@ class MainMenuView(View):
     drawing graphics. Also passes user input onto the controller.
     """
     def __init__(self, controller):
+        """
+        Instantiates a MainMenuView and returns it.
+
+        Args:
+            controller (Controller): The controller to pass user input.
+        """
         super().__init__(controller)
 
         # The hovered input when entering this View.
@@ -40,6 +46,15 @@ class MainMenuView(View):
         }
 
     def move_cursor(self, direction):
+        """
+        Moves the selected Button in a Direction.
+
+        Args:
+            direction (Direction): The Direction to move the cursor.
+
+        Returns:
+            Action: An empty Action.
+        """
         movement = 1
         last_input = ""
         if direction is Direction.U:
@@ -62,13 +77,15 @@ class MainMenuView(View):
                 next_but_ind = (next_but_ind + movement) % len(self.buttons)
             next_enabled_button = self.buttons[next_but_ind]
 
+            # Update Buttons and information box.
             self.selected.set_hovered(False)
             next_enabled_button.set_hovered(True)
             self.selected = next_enabled_button
-        else:
-            return Action("", [])
+            self.update_information_box_text()
 
-        return Action("set last input", [last_input])
+            self.controller.set_last_inp(last_input)
+
+        return Action("", [])
 
     def make_controls_bar(self):
         """
