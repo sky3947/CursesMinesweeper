@@ -30,8 +30,7 @@ class Controller:
 
         # Map of actions to functions.
         self.actions = {
-            "quit": self.action_quit,
-            "set last input": self.action_set_last_input
+            "quit": self.action_quit
         }
 
     def has_saved_game(self):
@@ -106,16 +105,3 @@ class Controller:
             Flow: Send Flow.BREAK.
         """
         return Flow.BREAK
-
-    def action_set_last_input(self, inp):
-        """
-        Sets the last valid input.
-
-        Args:
-            inp (str): The last valid input.
-
-        Returns:
-            Flow: Send Flow.PASS.
-        """
-        self.set_last_inp(inp)
-        return Flow.PASS
