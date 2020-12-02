@@ -37,13 +37,29 @@ class MainMenuView(View):
         self.make_controls_bar()
 
         # Map of input to functions.
+        enter = self.graphics.ENTER_KEY
         self.controls = {
+            # Pressing "q" will quit the application.
             "q": lambda: Action("quit", []),
+
+            # Movement keys.
             "w": lambda: self.move_cursor(Direction.U),
             "a": lambda: self.move_cursor(Direction.L),
             "s": lambda: self.move_cursor(Direction.D),
-            "d": lambda: self.move_cursor(Direction.R)
+            "d": lambda: self.move_cursor(Direction.R),
+
+            # Repeat the last valid input.
+            enter: self.repeat_last_valid_input
         }
+
+    def repeat_last_valid_input(self):
+        """
+        Repeats the last valid input.
+
+        Returns:
+            Action: The action to pass to the controller.
+        """
+        return self.parse(self.controller.get_last_inp())
 
     def move_cursor(self, direction):
         """
