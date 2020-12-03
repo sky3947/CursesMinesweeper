@@ -49,15 +49,32 @@ class MainMenuView(View):
             "d": lambda: self.move_cursor(Direction.R),
 
             # Repeat the last valid input.
-            enter: self.repeat_last_valid_input
+            enter: self.repeat_last_valid_input,
+
+            # Click the selected UIElement.
+            "m": self.click
         }
+
+    def click(self):
+        """
+        Clicks the selected UIElement.
+
+        Args:
+            params (list): The list of parameters to pass to the
+                UIElement.
+
+        Returns:
+            Action: The Action to pass to the controller.
+        """
+        self.controller.set_last_inp("m")
+        return self.selected.click()
 
     def repeat_last_valid_input(self):
         """
         Repeats the last valid input.
 
         Returns:
-            Action: The action to pass to the controller.
+            Action: The Action to pass to the controller.
         """
         return self.parse(self.controller.get_last_inp())
 
@@ -163,6 +180,7 @@ class MainMenuView(View):
         delete_save_button.set_color(color)
         delete_save_button.set_hovered_color(hovered_color)
         delete_save_button.set_disabled_color(disabled_color)
+        delete_save_button.set_action(self.delete_save)
         self.uielements.append(delete_save_button)
 
         # Continue Button.
@@ -170,6 +188,7 @@ class MainMenuView(View):
         continue_button.set_color(color)
         continue_button.set_hovered_color(hovered_color)
         continue_button.set_disabled_color(disabled_color)
+        continue_button.set_action(self.continue_game)
         self.uielements.append(continue_button)
 
         # New game Button.
@@ -177,6 +196,7 @@ class MainMenuView(View):
         new_game_button.set_color(color)
         new_game_button.set_hovered_color(hovered_color)
         new_game_button.set_disabled_color(disabled_color)
+        new_game_button.set_action(self.new_game)
         self.uielements.append(new_game_button)
 
         # Keep track of Buttons.
@@ -223,3 +243,16 @@ class MainMenuView(View):
         inp = inp.lower()
         fun = self.controls.get(inp, lambda: Action("", []))
         return fun()
+
+    #
+    # Button functionality
+    #
+
+    def delete_save(self):
+        return Action("", [])
+
+    def continue_game(self):
+        return Action("", [])
+
+    def new_game(self):
+        return Action("", [])
