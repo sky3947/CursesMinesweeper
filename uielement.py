@@ -226,40 +226,45 @@ class Popup(UIElement):
     def to_tuples(self):
         lines = []
 
+        # Background
+        for i in range(10):
+            t_point = Point(0, self.point.y+i)
+            lines.append((t_point, " "*Graphics.LENGTH, self.primary_color))
+
         # Top and bottom borders.
-        t_point = Point(self.point.x, self.point.y)
+        t_point = Point(0, self.point.y)
         lines.append((t_point, "="*Graphics.LENGTH, self.primary_color))
-        t_point = Point(self.point.x, self.point.y+9)
+        t_point = Point(0, self.point.y+9)
         lines.append((t_point, "="*Graphics.LENGTH, self.primary_color))
 
         # Title.
-        t_point = Point(5, self.point.y+1)
-        lines.append((t_point, " "*Graphics.LENGTH-10, self.title_color))
-        t_point = Point(Graphics.LENGTH//2, self.point.y+1)
-        lines.append((t_point, self.text, self.title_color))
+        t_point = Point(10, self.point.y+1)
+        lines.append((t_point, " "*(Graphics.LENGTH-20), self.title_color))
+        t_point = Point((Graphics.LENGTH-len(self.title))//2, self.point.y+1)
+        lines.append((t_point, self.title, self.title_color))
 
         # Exclamation mark decorations.
         for i in range(2):
-            t_point = Point(i*(Graphics.LENGTH-10)+4, self.point.y+1)
-            lines.append((t_point, "_", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-12)+3, self.point.y+2)
+            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+1)
+            lines.append((t_point, " _ ", self.secondary_color))
+            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+2)
             lines.append((t_point, "| |", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-12)+3, self.point.y+3)
+            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+3)
             lines.append((t_point, "| |", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-12)+3, self.point.y+4)
+            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+4)
             lines.append((t_point, "| |", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-12)+3, self.point.y+5)
+            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+5)
             lines.append((t_point, "!_!", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-10)+4, self.point.y+6)
-            lines.append((t_point, "_", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-12)+3, self.point.y+7)
+            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+6)
+            lines.append((t_point, " _ ", self.secondary_color))
+            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+7)
             lines.append((t_point, "!_!", self.secondary_color))
 
         # Text.
         wrapper = textwrap.TextWrapper(width=40, max_lines=6)
         wrapped = wrapper.wrap(self.text)
         t_point = Point(10, self.point.y+7)
-        lines.append((t_point, " "*Graphics.LENGTH-10, self.title_color))
+        lines.append((t_point, " "*(Graphics.LENGTH-20), self.title_color))
         for i, text in enumerate(wrapped):
             t_point = Point(10, self.point.y+i+2)
             if i != 6:
@@ -274,6 +279,8 @@ class Popup(UIElement):
         y_color = self.highlight_color if self.option else self.primary_color
         lines.append((n_point, "N", n_color))
         lines.append((y_point, "Y", y_color))
+
+        return lines
 
 class Button(UIElement):
     """
