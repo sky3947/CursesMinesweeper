@@ -41,6 +41,13 @@ class Model:
         """
         return os.path.exists(self.SAVE_FILE)
 
+    def delete_saved_game(self):
+        """
+        Deletes the save file.
+        """
+        if self.has_saved_game():
+            os.remove(self.SAVE_FILE)
+
     def change_view(self, view):
         """
         Sets the next view to be served to the user.

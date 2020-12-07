@@ -5,7 +5,7 @@ start, or delete a Minesweeper game.
 
 from view import View
 from utility import Action, Point, Direction
-from uielement import TextBox, LongTextBox, Button
+from uielement import TextBox, LongTextBox, Button, Popup
 
 class MainMenuView(View):
     """
@@ -27,6 +27,9 @@ class MainMenuView(View):
         # Make the MINESWEEPER logo.
         self.make_banner()
 
+        # Initialize selected variable.
+        self.selected = None
+
         # Make Buttons
         self.make_buttons()
 
@@ -35,6 +38,9 @@ class MainMenuView(View):
 
         # Make controls bar.
         self.make_controls_bar()
+
+        # Set up Popup.
+        self.make_popup()
 
         # Map of input to functions.
         enter = self.graphics.ENTER_KEY
@@ -66,7 +72,6 @@ class MainMenuView(View):
         Returns:
             Action: The Action to pass to the controller.
         """
-        self.controller.set_last_inp("m")
         return self.selected.click()
 
     def repeat_last_valid_input(self):
@@ -101,24 +106,43 @@ class MainMenuView(View):
         elif direction is Direction.R:
             last_input = "d"
 
-        has_enabled_buttons = any(but.is_enabled() for but in self.buttons)
-        if has_enabled_buttons:
-            # Find the next enabled Button.
+        has_active_buttons = any(but.is_active() for but in self.buttons)
+        if has_active_buttons:
+            # Find the next active Button.
             cur_but_ind = self.buttons.index(self.selected)
             next_but_ind = (cur_but_ind + movement) % len(self.buttons)
-            while not self.buttons[next_but_ind].is_enabled():
+            while not self.buttons[next_but_ind].is_active():
                 next_but_ind = (next_but_ind + movement) % len(self.buttons)
-            next_enabled_button = self.buttons[next_but_ind]
+            next_active_button = self.buttons[next_but_ind]
 
             # Update Buttons and information box.
             self.selected.set_hovered(False)
-            next_enabled_button.set_hovered(True)
-            self.selected = next_enabled_button
+            next_active_button.set_hovered(True)
+            self.selected = next_active_button
             self.update_information_box_text()
 
             self.controller.set_last_inp(last_input)
 
-        return Action("", [])
+    def make_popup(self):
+        """
+        Initializes a reusable Popup.
+        """
+        popup_controls = {
+            "q": self.reset_popup,
+            "w": self.toggle_choice,
+            "a": self.toggle_choice,
+            "s": self.toggle_choice,
+            "d": self.toggle_choice,
+            self.graphics.ENTER_KEY: self.toggle_choice
+        }
+        self.popup = Popup(Point(0, 10), "", "")
+        self.popup.set_highlight_color(self.graphics.HIGHLIGHT)
+        self.popup.set_secondary_color(self.graphics.DIM)
+        title_color = self.graphics.BRIGHT | self.graphics.UNDERLINE
+        self.popup.set_title_color(title_color)
+        self.popup.set_controls(popup_controls)
+        self.popup.set_enabled(False)
+        self.uielements.append(self.popup)
 
     def make_controls_bar(self):
         """
@@ -179,7 +203,7 @@ class MainMenuView(View):
         delete_save_button = Button(centered_point, text)
         delete_save_button.set_color(color)
         delete_save_button.set_hovered_color(hovered_color)
-        delete_save_button.set_disabled_color(disabled_color)
+        delete_save_button.set_inactive_color(disabled_color)
         delete_save_button.set_action(self.delete_save)
         self.uielements.append(delete_save_button)
 
@@ -187,7 +211,7 @@ class MainMenuView(View):
         continue_button = Button(Point(centered_point.x, 13), "Continue")
         continue_button.set_color(color)
         continue_button.set_hovered_color(hovered_color)
-        continue_button.set_disabled_color(disabled_color)
+        continue_button.set_inactive_color(disabled_color)
         continue_button.set_action(self.continue_game)
         self.uielements.append(continue_button)
 
@@ -195,7 +219,7 @@ class MainMenuView(View):
         new_game_button = Button(Point(centered_point.x, 14), "New Game")
         new_game_button.set_color(color)
         new_game_button.set_hovered_color(hovered_color)
-        new_game_button.set_disabled_color(disabled_color)
+        new_game_button.set_inactive_color(disabled_color)
         new_game_button.set_action(self.new_game)
         self.uielements.append(new_game_button)
 
@@ -208,8 +232,8 @@ class MainMenuView(View):
         else:
             self.selected = new_game_button
             new_game_button.set_hovered(True)
-            continue_button.set_enabled(False)
-            delete_save_button.set_enabled(False)
+            continue_button.set_active(False)
+            delete_save_button.set_active(False)
 
     def make_banner(self):
         """
@@ -229,30 +253,61 @@ class MainMenuView(View):
         title.set_color(color)
         self.uielements.append(title)
 
-    def parse(self, inp):
-        """
-        Parses input and returns an Action. UI-related interactions are
-        handled here.
-
-        Args:
-            inp (str): The user input.
-
-        Returns:
-            Action: The action to perform.
-        """
-        inp = inp.lower()
-        fun = self.controls.get(inp, lambda: Action("", []))
-        return fun()
-
     #
-    # Button functionality
+    # Button functionality.
     #
 
     def delete_save(self):
-        return Action("", [])
+        """
+        Sets up the Popup for deleting the saved game.
+        """
+        msg = (
+            "You are about to delete your saved game. Do you want to proceed?"
+        )
+        self.popup.set_text(msg)
+        self.popup.set_title("DELETE SAVE?")
+        self.popup.change_control("m", self.delete_save_popup_click)
+        self.set_focused_ui(self.popup)
+        self.popup.set_enabled(True)
 
     def continue_game(self):
-        return Action("", [])
+        pass
 
     def new_game(self):
-        return Action("", [])
+        pass
+
+    #
+    # Popup controls.
+    #
+
+    def reset_popup(self):
+        """
+        Closes (disables) the Popup.
+        """
+        self.popup.set_enabled(False)
+        self.popup.set_option(False)
+        self.set_focused_ui(None)
+
+    def toggle_choice(self):
+        """
+        Toggles the selected option in the Popup.
+        """
+        self.popup.set_option(not self.popup.get_option())
+
+    def delete_save_popup_click(self):
+        """
+        Handles Popup response for deleting a saved game.
+        """
+        if self.popup.get_option():
+            # Delete the saved game.
+            # self.controller.delete_saved_game()
+
+            # Reconfigure Buttons.
+            self.buttons[0].set_active(False)
+            self.buttons[1].set_hovered(True)
+            self.buttons[2].set_hovered(False)
+            self.buttons[2].set_active(False)
+            self.selected = self.buttons[1]
+            self.update_information_box_text()
+
+        self.reset_popup()

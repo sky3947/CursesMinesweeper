@@ -2,8 +2,8 @@
 This class is the View for the Minesweeper program.
 """
 
-from abc import ABC, abstractmethod
-from utility import Flow, Point
+from abc import ABC
+from utility import Flow, Point, Action
 
 class View(ABC):
     """
@@ -26,9 +26,47 @@ class View(ABC):
         # The interactable UI currently being focused.
         self.focused_ui = None
 
-    @abstractmethod
+        # The default table of controls.
+        self.controls = {}
+
     def parse(self, inp):
-        """A scene could parse input and return an action."""
+        """
+        A scene could parse input and return an action.
+
+        Args:
+            inp (str): A single character input from the user.
+
+        Returns:
+            Action: The action to for the controller to perform.
+        """
+        inp = inp.lower()
+        mt_reaction = lambda: Action("", [])
+
+        reaction = None
+        if self.focused_ui is None:
+            reaction = self.controls.get(inp, mt_reaction)
+        else:
+            reaction = self.focused_ui.controls.get(inp, mt_reaction)
+
+        return reaction() or mt_reaction()
+
+    def set_focused_ui(self, uielement):
+        """
+        Sets the focused UIElement.
+
+        Args:
+            uielement (UIElement): The focused UIElement.
+        """
+        self.focused_ui = uielement
+
+    def get_focused_ui(self):
+        """
+        Gets the focused UIElement.
+
+        Returns:
+            UIElement: The focused UIElement.
+        """
+        return self.focused_ui
 
     def draw(self):
         """A scene could have graphics."""
@@ -40,6 +78,15 @@ class View(ABC):
         # Draw last valid input.
         text = "({})".format(self.controller.get_last_inp())
         self.graphics.draw(Point(1, self.graphics.HEIGHT-1), text)
+
+    def get_first_input(self):
+        """
+        Gets the first hovered input when entering this View.
+
+        Returns:
+            str: The first hovered input.
+        """
+        return self.first_inp
 
     def loop(self):
         """The main loop of a View."""

@@ -42,6 +42,12 @@ class Controller:
         """
         return self.model.has_saved_game()
 
+    def delete_saved_game(self):
+        """
+        Asks the model to delete the saved game.
+        """
+        self.model.delete_saved_game()
+
     def set_last_inp(self, inp):
         """
         Sets the last valid input.
@@ -74,7 +80,7 @@ class Controller:
             view (View): The next view.
         """
         self.model.change_view(view)
-        self.set_last_inp(view.first_inp)
+        self.set_last_inp(view.get_first_input())
 
     def act(self, action):
         """

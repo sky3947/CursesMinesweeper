@@ -35,11 +35,17 @@ class UIElement(ABC):
         # The default color.
         self.color = 0
 
-        # A UIElement can be disabled.
+        # A UIElement can be disabled. (Disabled => no drawing.)
         self.enabled = True
 
         # The function to be executed when the UIElement is clicked.
         self.action = lambda: None
+
+        # A focusable UIElement should have controls.
+        self.focusable = False
+
+        # A UIElement could have View-defined controls if focusable.
+        self.controls = {}
 
     def get_type(self):
         """
@@ -109,6 +115,34 @@ class UIElement(ABC):
         """
         return self.action(*params)
 
+    def is_focusable(self):
+        """
+        Checks if this UIElement is focusable.
+
+        Returns:
+            bool: True if focusable, False otherwise.
+        """
+        return self.focusable
+
+    def set_controls(self, controls):
+        """
+        Sets the controls of this UIElement.
+
+        Args:
+            controls (dict): The set of controls to use.
+        """
+        self.controls = controls
+
+    def change_control(self, name, value):
+        """
+        Changes one of the controls mappings of this UIElement.
+
+        Args:
+            name (str): The name field.
+            value (Any): The value field.
+        """
+        self.controls[name] = value
+
     def draw(self, graphics):
         """
         Draws this UIElement.
@@ -118,7 +152,7 @@ class UIElement(ABC):
                 functions.
         """
         tuples = self.to_tuples()
-        if tuples is None:
+        if tuples is None or not self.is_enabled():
             return
         for tup in tuples:
             graphics.draw(*tup)
@@ -138,6 +172,9 @@ class Popup(UIElement):
     def __init__(self, point, title="CONTINUE ON?", text=""):
         # Give this UIElement the Popup UI type.
         super().__init__(UIType.Popup, point)
+
+        # A Popup is interactable.
+        self.focusable = True
 
         # The title of the Popup.
         self.title = title
@@ -186,6 +223,15 @@ class Popup(UIElement):
             option (bool): The new hovered option.
         """
         self.option = option
+
+    def get_option(self):
+        """
+        Gets the hovered option.
+
+        Returns:
+            bool: The hovered option.
+        """
+        return self.option
 
     def set_primary_color(self, color):
         """
@@ -238,39 +284,36 @@ class Popup(UIElement):
         lines.append((t_point, "="*Graphics.LENGTH, self.primary_color))
 
         # Title.
-        t_point = Point(10, self.point.y+1)
-        lines.append((t_point, " "*(Graphics.LENGTH-20), self.title_color))
+        t_point = Point(9, self.point.y+1)
+        lines.append((t_point, " "*(Graphics.LENGTH-18), self.title_color))
         t_point = Point((Graphics.LENGTH-len(self.title))//2, self.point.y+1)
         lines.append((t_point, self.title, self.title_color))
 
         # Exclamation mark decorations.
         for i in range(2):
-            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+1)
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+1)
             lines.append((t_point, " _ ", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+2)
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+2)
             lines.append((t_point, "| |", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+3)
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+3)
             lines.append((t_point, "| |", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+4)
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+4)
             lines.append((t_point, "| |", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+5)
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+5)
             lines.append((t_point, "!_!", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+6)
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+6)
             lines.append((t_point, " _ ", self.secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-10)+3, self.point.y+7)
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+7)
             lines.append((t_point, "!_!", self.secondary_color))
 
         # Text.
-        wrapper = textwrap.TextWrapper(width=40, max_lines=6)
+        wrapper = textwrap.TextWrapper(width=40, max_lines=5)
         wrapped = wrapper.wrap(self.text)
         t_point = Point(10, self.point.y+7)
         lines.append((t_point, " "*(Graphics.LENGTH-20), self.title_color))
         for i, text in enumerate(wrapped):
             t_point = Point(10, self.point.y+i+2)
-            if i != 6:
-                lines.append((t_point, text, self.primary_color))
-            else:
-                lines.append((t_point, text, self.title_color))
+            lines.append((t_point, text, self.primary_color))
 
         # N and Y selection.
         n_point = Point(24, self.point.y+8)
@@ -284,7 +327,8 @@ class Popup(UIElement):
 
 class Button(UIElement):
     """
-    A Button is a UIElement that can be hovered, disabled, and clicked.
+    A Button is a UIElement that can be hovered, deactivated, and
+    clicked.
     """
     def __init__(self, point, text="Button"):
         """
@@ -304,7 +348,10 @@ class Button(UIElement):
         self.hovered_color = 0
 
         # The disabled color.
-        self.disabled_color = 0
+        self.inactive_color = 0
+
+        # An inactive button uses inactive_color.
+        self.active = True
 
         # A Button can be hovered.
         self.hovered = False
@@ -327,14 +374,32 @@ class Button(UIElement):
         """
         self.hovered_color = color
 
-    def set_disabled_color(self, color):
+    def set_inactive_color(self, color):
         """
         Sets this Button's disabled color.
 
         Args:
             color (int): The new color.
         """
-        self.disabled_color = color
+        self.inactive_color = color
+
+    def set_active(self, active):
+        """
+        Sets a new active value.
+
+        Args:
+            active (bool): The new active value.
+        """
+        self.active = active
+
+    def is_active(self):
+        """
+        Checks this Button's active flag.
+
+        Returns:
+            bool: The Button's active flag.
+        """
+        return self.active
 
     def set_hovered(self, hovered):
         """
@@ -356,8 +421,8 @@ class Button(UIElement):
 
     def to_tuples(self):
         color = self.color
-        if not self.is_enabled():
-            color = self.disabled_color
+        if not self.is_active():
+            color = self.inactive_color
         elif self.is_hovered():
             color = self.hovered_color
         return [(self.point, self.text, color)]
