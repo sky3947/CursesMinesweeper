@@ -185,9 +185,6 @@ class Popup(UIElement):
         # If False, "No" is hovered. If True, "Yes" is hovered.
         self.option = False
 
-        # The primary color when drawing the Popup.
-        self.primary_color = 0
-
         # The title color when drawing the Popup.
         self.title_color = 0
 
@@ -233,15 +230,6 @@ class Popup(UIElement):
         """
         return self.option
 
-    def set_primary_color(self, color):
-        """
-        Sets the primary color.
-
-        Args:
-            color (int): The new primary color.
-        """
-        self.primary_color = color
-
     def set_title_color(self, color):
         """
         Sets the title color.
@@ -275,13 +263,13 @@ class Popup(UIElement):
         # Background
         for i in range(10):
             t_point = Point(0, self.point.y+i)
-            lines.append((t_point, " "*Graphics.LENGTH, self.primary_color))
+            lines.append((t_point, " "*Graphics.LENGTH, self.color))
 
         # Top and bottom borders.
         t_point = Point(0, self.point.y)
-        lines.append((t_point, "="*Graphics.LENGTH, self.primary_color))
+        lines.append((t_point, "="*Graphics.LENGTH, self.color))
         t_point = Point(0, self.point.y+9)
-        lines.append((t_point, "="*Graphics.LENGTH, self.primary_color))
+        lines.append((t_point, "="*Graphics.LENGTH, self.color))
 
         # Title.
         t_point = Point(9, self.point.y+1)
@@ -313,13 +301,13 @@ class Popup(UIElement):
         lines.append((t_point, " "*(Graphics.LENGTH-20), self.title_color))
         for i, text in enumerate(wrapped):
             t_point = Point(10, self.point.y+i+2)
-            lines.append((t_point, text, self.primary_color))
+            lines.append((t_point, text, self.color))
 
         # N and Y selection.
         n_point = Point(24, self.point.y+8)
-        n_color = self.primary_color if self.option else self.highlight_color
+        n_color = self.color if self.option else self.highlight_color
         y_point = Point(Graphics.LENGTH-25, self.point.y+8)
-        y_color = self.highlight_color if self.option else self.primary_color
+        y_color = self.highlight_color if self.option else self.color
         lines.append((n_point, "N", n_color))
         lines.append((y_point, "Y", y_color))
 

@@ -136,6 +136,7 @@ class MainMenuView(View):
             self.graphics.ENTER_KEY: self.toggle_choice
         }
         self.popup = Popup(Point(0, 10), "", "")
+        self.popup.set_color(self.graphics.BRIGHT)
         self.popup.set_highlight_color(self.graphics.HIGHLIGHT)
         self.popup.set_secondary_color(self.graphics.DIM)
         title_color = self.graphics.BRIGHT | self.graphics.UNDERLINE
