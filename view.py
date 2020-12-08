@@ -96,6 +96,7 @@ class View(ABC):
             action = self.parse(self.graphics.get_inp())
             flow = self.controller.act(action)
 
+            # Use Flow.RETURN when changing scenes. Stops stack growth.
             if flow is Flow.RETURN:
                 return
 

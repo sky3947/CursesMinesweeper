@@ -4,7 +4,6 @@ This class is the model for the Minesweeper program.
 
 import os
 from controller import Controller
-from main_menu_view import MainMenuView
 
 class Model:
     """
@@ -61,7 +60,7 @@ class Model:
         """
         Starts the game loop at the main menu view.
         """
-        self.controller.change_view(MainMenuView(self.controller))
+        self.controller.start()
         self.loop()
 
     def stop_game_loop(self):

@@ -9,8 +9,7 @@ from uielement import TextBox, LongTextBox, Button, Popup
 
 class MainMenuView(View):
     """
-    Translates model information into human-readable information by
-    drawing graphics. Also passes user input onto the controller.
+    Draws main menu elements, such as: TextBoxes, Buttons and Popups.
     """
     def __init__(self, controller):
         """
@@ -24,11 +23,11 @@ class MainMenuView(View):
         # The hovered input when entering this View.
         self.first_inp = "m"
 
-        # Make the MINESWEEPER logo.
-        self.make_banner()
-
         # Initialize selected variable.
         self.selected = None
+
+        # Make the MINESWEEPER logo.
+        self.make_banner()
 
         # Make Buttons
         self.make_buttons()
@@ -254,6 +253,17 @@ class MainMenuView(View):
         title.set_color(color)
         self.uielements.append(title)
 
+    def display_loading_screen(self):
+        """
+        Clears all UIElements and puts a loading text on the screen.
+        """
+        self.uielements = []
+        msg = "Loading minefield..."
+        centered = self.graphics.center_just(self.graphics.HEIGHT//2, msg)
+        loading_text = TextBox(*centered)
+        loading_text.set_color(self.graphics.BRIGHT)
+        self.uielements.append(loading_text)
+
     #
     # Button functionality.
     #
@@ -272,10 +282,29 @@ class MainMenuView(View):
         self.popup.set_enabled(True)
 
     def continue_game(self):
-        pass
+        """
+        Tells the Model to load the save file and continue to the game
+        View.
+        """
+        self.display_loading_screen()
+
+        # TODO: Load save file.
 
     def new_game(self):
-        pass
+        """
+        Sets up the Popup warning for overriding an existing game, or
+        skips Popup if there's no saved game.
+        """
+        if self.controller.has_saved_game():
+            msg = (
+                "You are about to override your save file with a new game. Do "
+                "you want to proceed?"
+            )
+            self.popup.set_text(msg)
+            self.popup.set_title("OVERRIDE SAVE?")
+            self.popup.change_control("m", self.new_game_popup_click)
+            self.set_focused_ui(self.popup)
+            self.popup.set_enabled(True)
 
     #
     # Popup controls.
@@ -312,3 +341,16 @@ class MainMenuView(View):
             self.update_information_box_text()
 
         self.reset_popup()
+
+    def new_game_popup_click(self):
+        """
+        Handles Popup response for starting a new game.
+
+        Returns:
+            Action: The action to give the controller.
+        """
+        if self.popup.get_option():
+            return Action("goto new game view", [])
+
+        self.reset_popup()
+        return None

@@ -4,6 +4,8 @@ This class is the controller for the Minesweeper program.
 
 from graphics import Graphics
 from utility import Flow
+from main_menu_view import MainMenuView
+from new_game_view import NewGameView
 
 class Controller:
     """
@@ -29,8 +31,12 @@ class Controller:
         self.last_inp = ""
 
         # Map of actions to functions.
+        gngv_fun = lambda: self.action_change_view(NewGameView(self))
+        gmmv_fun = lambda: self.action_change_view(MainMenuView(self))
         self.actions = {
-            "quit": self.action_quit
+            "quit": self.action_quit,
+            "goto new game view": gngv_fun,
+            "goto main menu view": gmmv_fun
         }
 
     def has_saved_game(self):
@@ -66,6 +72,12 @@ class Controller:
         """
         return self.last_inp
 
+    def start(self):
+        """
+        Readies Controller to start the game loop.
+        """
+        self.change_view(MainMenuView(self))
+
     def stop_game_loop(self):
         """
         Tells the model to stop the game loop.
@@ -99,7 +111,7 @@ class Controller:
             return Flow.PASS
 
     #
-    # Actions functions.
+    # Actions functions. The Flow is sent back to the View.
     #
 
     @staticmethod
@@ -111,3 +123,16 @@ class Controller:
             Flow: Send Flow.BREAK.
         """
         return Flow.BREAK
+
+    def action_change_view(self, view):
+        """
+        Sends the control flow to change the View.
+
+        Args:
+            view (View): The new View.
+
+        Returns:
+            Flow: Send Flow.RETURN.
+        """
+        self.change_view(view)
+        return Flow.RETURN
