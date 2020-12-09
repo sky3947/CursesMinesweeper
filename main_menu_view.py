@@ -29,7 +29,7 @@ class MainMenuView(View):
         # Make the MINESWEEPER logo.
         self.make_banner()
 
-        # Make Buttons
+        # Make Buttons.
         self.make_buttons()
 
         # Make the information box. This explains each Button.
@@ -135,7 +135,6 @@ class MainMenuView(View):
             self.graphics.ENTER_KEY: self.toggle_choice
         }
         self.popup = Popup(Point(0, 10), "", "")
-        self.popup.set_color(self.graphics.BRIGHT)
         self.popup.set_highlight_color(self.graphics.HIGHLIGHT)
         self.popup.set_secondary_color(self.graphics.DIM)
         title_color = self.graphics.BRIGHT | self.graphics.UNDERLINE
@@ -148,15 +147,11 @@ class MainMenuView(View):
         """
         Creates the controls bar to display controls.
         """
-        # Color options.
-        color = self.graphics.BRIGHT
-
         text = [
             "_"*self.graphics.LENGTH,
             " wasd: Move | m: Select | q: Quit"
         ]
         controls = LongTextBox(Point(0, self.graphics.HEIGHT-3), text)
-        controls.set_color(color)
         self.uielements.append(controls)
 
     def update_information_box_text(self):
@@ -176,16 +171,11 @@ class MainMenuView(View):
         """
         Creates the info box to explain each Button.
         """
-        # Color options.
-        color = self.graphics.BRIGHT
-
         self.info_box = TextBox(Point(1, 22))
-        self.info_box.set_color(color)
         self.uielements.append(self.info_box)
         self.update_information_box_text()
 
         info_box_bar = TextBox(Point(0, 21), "_"*self.graphics.LENGTH)
-        info_box_bar.set_color(color)
         self.uielements.append(info_box_bar)
 
     def make_buttons(self):
@@ -193,7 +183,6 @@ class MainMenuView(View):
         Initializes and adds Buttons.
         """
         # Color options.
-        color = self.graphics.BRIGHT
         hovered_color = self.graphics.HIGHLIGHT
         disabled_color = self.graphics.DIM
 
@@ -201,7 +190,6 @@ class MainMenuView(View):
         text = "Delete Save"
         centered_point, _ = self.graphics.center_just(15, text)
         delete_save_button = Button(centered_point, text)
-        delete_save_button.set_color(color)
         delete_save_button.set_hovered_color(hovered_color)
         delete_save_button.set_inactive_color(disabled_color)
         delete_save_button.set_action(self.delete_save)
@@ -209,7 +197,6 @@ class MainMenuView(View):
 
         # Continue Button.
         continue_button = Button(Point(centered_point.x, 13), "Continue")
-        continue_button.set_color(color)
         continue_button.set_hovered_color(hovered_color)
         continue_button.set_inactive_color(disabled_color)
         continue_button.set_action(self.continue_game)
@@ -217,7 +204,6 @@ class MainMenuView(View):
 
         # New game Button.
         new_game_button = Button(Point(centered_point.x, 14), "New Game")
-        new_game_button.set_color(color)
         new_game_button.set_hovered_color(hovered_color)
         new_game_button.set_inactive_color(disabled_color)
         new_game_button.set_action(self.new_game)
@@ -239,9 +225,6 @@ class MainMenuView(View):
         """
         Creates the MINESWEEPER banner.
         """
-        # Color options.
-        color = self.graphics.BRIGHT
-
         banner = [
 			R"  __ __ _ __  _ ___  __  _   _ ___ ___ ___ ___ ___  ",
 			R" |  V  | |  \| | __/' _/| | | | __| __| _,\ __| _ \ ",
@@ -250,7 +233,6 @@ class MainMenuView(View):
 		]
         start_point, _ = self.graphics.center_just(4, banner[0])
         title = LongTextBox(start_point, banner)
-        title.set_color(color)
         self.uielements.append(title)
 
     def display_loading_screen(self):
