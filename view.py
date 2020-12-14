@@ -43,10 +43,10 @@ class View(ABC):
         mt_reaction = lambda: Action("", [])
 
         reaction = None
-        if self.focused_ui is None:
-            reaction = self.controls.get(inp, mt_reaction)
-        else:
+        if self.focused_ui is not None and self.focused_ui.is_focusable():
             reaction = self.focused_ui.controls.get(inp, mt_reaction)
+        else:
+            reaction = self.controls.get(inp, mt_reaction)
 
         return reaction() or mt_reaction()
 
