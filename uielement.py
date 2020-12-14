@@ -15,6 +15,7 @@ class UIType(Enum):
     LongTextBox = 1
     Button = 2
     Popup = 3
+    NumberField = 4
 
 class UIElement(ABC):
     """UI elements provide methods for user interaction."""
@@ -43,9 +44,6 @@ class UIElement(ABC):
 
         # A focusable UIElement should have controls.
         self.focusable = False
-
-        # A UIElement could have View-defined controls if focusable.
-        self.controls = {}
 
     def get_type(self):
         """
@@ -124,25 +122,6 @@ class UIElement(ABC):
         """
         return self.focusable
 
-    def set_controls(self, controls):
-        """
-        Sets the controls of this UIElement.
-
-        Args:
-            controls (dict): The set of controls to use.
-        """
-        self.controls = controls
-
-    def change_control(self, name, value):
-        """
-        Changes one of the controls mappings of this UIElement.
-
-        Args:
-            name (str): The name field.
-            value (Any): The value field.
-        """
-        self.controls[name] = value
-
     def draw(self, graphics):
         """
         Draws this UIElement.
@@ -165,16 +144,278 @@ class UIElement(ABC):
         arguments for Graphics.draw.
         """
 
-class Popup(UIElement):
+class FocusableUIElement(UIElement):
+    """
+    A FocusableUIElement has View-defined controls.
+    """
+    def __init__(self, uitype, point):
+        """
+        Constructs a FocusableUIElement and returns it.
+
+        Args:
+            uitype (UIType): The UIType of this FocusableUIElement.
+            point (Point): The x and y-location of this
+                FocusableUIElement.
+        """
+        # Provide FocusableUIElement parameters.
+        super().__init__(uitype, point)
+
+        # This FocusableUIElement is focusable.
+        self.focusable = True
+
+        # A FocusableUIElement has View-defined controls.
+        self.controls = {}
+
+    def set_controls(self, controls):
+        """
+        Sets the controls of this FocusableUIElement.
+
+        Args:
+            controls (dict): The set of controls to use.
+        """
+        self.controls = controls
+
+    def change_control(self, name, value):
+        """
+        Changes one of the controls mappings of this FocusableUIElement.
+
+        Args:
+            name (str): The name field.
+            value (Any): The value field.
+        """
+        self.controls[name] = value
+
+class NumberField(FocusableUIElement):
+    """
+    A NumberField allows the user to provide number inputs.
+    """
+    def __init__(self, point, value, maximum):
+        """
+        Constructs a NumberField and returns it.
+
+        Args:
+            point (Point): The x and y-positions of a NumberField.
+            value (int): The starting value.
+            maximum (int): The maximum value.
+        """
+        # Give this UIElement the Popup UI type.
+        super().__init__(UIType.NumberField, point)
+
+        # The minimum value of this NumberField.
+        self.minimum = min(value, 0)
+
+        # The maximum value of this NumberField.
+        self.maximum = maximum
+
+        # The current value of this NumberField.
+        self.value = min(value, maximum)
+
+        # The minimum (drawn) length of this NumberField.
+        self.min_length = 0
+
+        # Drawing parameters.
+        self.decorations = {
+            # The prefix to draw.
+            "prefix": "",
+
+            # The postfix to draw.
+            "postfix": "",
+
+            # The color to use when hovering this NumberField.
+            "hovered color": 0,
+
+            # The color to use when this NumberField is inactive.
+            "inactive color": 0,
+
+            # Left justify the value.
+            "left justify": True
+        }
+
+        # An inactive NumberField uses inactive_color.
+        self.active = True
+
+        # A NumberField can be hovered.
+        self.hovered = False
+
+    def set_minimum(self, minimum):
+        """
+        Sets the new minimum value.
+
+        Args:
+            minimum (int): The new minimum value.
+        """
+        self.minimum = minimum
+        self.value = max(self.value, minimum)
+
+    def set_maximum(self, maximum):
+        """
+        Sets the new maximum value.
+
+        Args:
+            maximum (int): The new maximum value.
+        """
+        self.maximum = maximum
+        self.value = min(self.minimum, maximum)
+
+    def set_value(self, value):
+        """
+        Sets the new value. This value can be out of bounds.
+
+        Args:
+            value (int): The new value.
+        """
+        self.value = value
+
+    def fix_bounds(self):
+        """
+        Makes sure the value is in-bounds.
+        """
+        self.value = min(max(self.value, self.minimum), self.maximum)
+
+    def set_min_length(self, length):
+        """
+        Sets the minimum length.
+
+        Args:
+            length (int): The new minimum length of the NumberField.
+        """
+        self.min_length = length
+
+    def set_prefix(self, prefix):
+        """
+        Sets the prefix to draw before the value.
+
+        Args:
+            prefix (str): The prefix.
+        """
+        self.decorations["prefix"] = prefix
+
+    def set_postfix(self, postfix):
+        """
+        Sets the postfix to draw after the value.
+
+        Args:
+            postfix (str): The postfix.
+        """
+        self.decorations["postfix"] = postfix
+
+    def set_hovered_color(self, color):
+        """
+        Sets the hovered color of this NumerField.
+
+        Args:
+            color (int): A curses color.
+        """
+        self.decorations["hovered color"] = color
+
+    def set_inactive_color(self, color):
+        """
+        Sets the inactive color of this NumberField.
+
+        Args:
+            color (int): A curses color.
+        """
+        self.decorations["inactive color"] = color
+
+    def set_left_justify(self, boolean):
+        """
+        Sets the left-justify boolean value of this NumberField.
+
+        Args:
+            boolean (bool): True to left-justify, False to
+                right-justify.
+        """
+        self.decorations["left justify"] = boolean
+
+    def set_active(self, active):
+        """
+        Sets a new active value.
+
+        Args:
+            active (bool): The new active value.
+        """
+        self.active = active
+
+    def is_active(self):
+        """
+        Checks the active flag.
+
+        Returns:
+            bool: The active flag.
+        """
+        return self.active
+
+    def set_hovered(self, hovered):
+        """
+        Sets this NumberField's hovered flag.
+
+        Args:
+            hovered (bool): The new hovered flag.
+        """
+        self.hovered = hovered
+
+    def is_hovered(self):
+        """
+        Checks this NumberField's hovered flag.
+
+        Returns:
+            bool: The hovered flag.
+        """
+        return self.hovered
+
+    def to_tuples(self):
+        # Colors
+        text_color = self.color
+        value_color = self.color
+        if not self.is_active():
+            text_color = self.decorations["inactive color"]
+            value_color = self.decorations["inactive color"]
+        elif self.is_hovered():
+            value_color = self.decorations["hovered color"]
+
+        tuples = []
+
+        # Prefix.
+        t_point = self.point
+        tuples.append((t_point, self.decorations["prefix"], text_color))
+
+        # Value.
+        new_x = t_point.x + len(self.decorations["prefix"])
+        t_point = Point(new_x, t_point.y)
+        text = str(self.value)
+        text_length = max(len(text), self.min_length)
+        tuples.append((t_point, " "*text_length, value_color))
+        if not self.decorations["left justify"]:
+            new_x = t_point.x + text_length - len(text)
+            s_t_point = Point(new_x, t_point.y)
+            tuples.append((s_t_point, str(self.value), value_color))
+        else:
+            tuples.append((t_point, str(self.value), value_color))
+
+        # Postfix.
+        new_x = t_point.x + text_length
+        t_point = Point(new_x, t_point.y)
+        tuples.append((t_point, self.decorations["postfix"], text_color))
+
+        return tuples
+
+class Popup(FocusableUIElement):
     """
     A Popup prompts for a Y/N response.
     """
     def __init__(self, point, title="CONTINUE ON?", text=""):
+        """
+        Constructs a Popup and returns it.
+
+        Args:
+            point (Point): The x and y-positions of this Popup.
+            title (str, optional): The title of this Popup. Defaults to
+                "CONTINUE ON?".
+            text (str, optional): The text to show in this Popup.
+                Defaults to "".
+        """
         # Give this UIElement the Popup UI type.
         super().__init__(UIType.Popup, point)
-
-        # A Popup is interactable.
-        self.focusable = True
 
         # The title of the Popup.
         self.title = title
@@ -185,14 +426,17 @@ class Popup(UIElement):
         # If False, "No" is hovered. If True, "Yes" is hovered.
         self.option = False
 
-        # The title color when drawing the Popup.
-        self.title_color = 0
+        # Drawing parameters.
+        self.decorations = {
+            # The title color when drawing the Popup.
+            "title color": 0,
 
-        # The secondary color when drawing the Popup.
-        self.secondary_color = 0
+            # The secondary color when drawing the Popup.
+            "secondary color": 0,
 
-        # The highlight color when drawing Y and N options.
-        self.highlight_color = 0
+            # The highlight color when drawing Y and N options.
+            "highlight color": 0
+        }
 
     def set_title(self, title):
         """
@@ -237,7 +481,7 @@ class Popup(UIElement):
         Args:
             color (int): The new title color.
         """
-        self.title_color = color
+        self.decorations["title color"] = color
 
     def set_secondary_color(self, color):
         """
@@ -246,7 +490,7 @@ class Popup(UIElement):
         Args:
             color (int): The new secondary color.
         """
-        self.secondary_color = color
+        self.decorations["secondary color"] = color
 
     def set_highlight_color(self, color):
         """
@@ -255,63 +499,68 @@ class Popup(UIElement):
         Args:
             color (int): The new highlight color.
         """
-        self.highlight_color = color
+        self.decorations["highlight color"] = color
 
     def to_tuples(self):
-        lines = []
+        # Colors
+        title_color = self.decorations["title color"]
+        secondary_color = self.decorations["secondary color"]
+        highlight_color = self.decorations["highlight color"]
+
+        tuples = []
 
         # Background
         for i in range(10):
             t_point = Point(0, self.point.y+i)
-            lines.append((t_point, " "*Graphics.LENGTH, self.color))
+            tuples.append((t_point, " "*Graphics.LENGTH, self.color))
 
         # Top and bottom borders.
         t_point = Point(0, self.point.y)
-        lines.append((t_point, "="*Graphics.LENGTH, self.color))
+        tuples.append((t_point, "="*Graphics.LENGTH, self.color))
         t_point = Point(0, self.point.y+9)
-        lines.append((t_point, "="*Graphics.LENGTH, self.color))
+        tuples.append((t_point, "="*Graphics.LENGTH, self.color))
 
         # Title.
         t_point = Point(9, self.point.y+1)
-        lines.append((t_point, " "*(Graphics.LENGTH-18), self.title_color))
+        tuples.append((t_point, " "*(Graphics.LENGTH-18), title_color))
         t_point = Point((Graphics.LENGTH-len(self.title))//2, self.point.y+1)
-        lines.append((t_point, self.title, self.title_color))
+        tuples.append((t_point, self.title, title_color))
 
         # Exclamation mark decorations.
         for i in range(2):
             t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+1)
-            lines.append((t_point, " _ ", self.secondary_color))
+            tuples.append((t_point, " _ ", secondary_color))
             t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+2)
-            lines.append((t_point, "| |", self.secondary_color))
+            tuples.append((t_point, "| |", secondary_color))
             t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+3)
-            lines.append((t_point, "| |", self.secondary_color))
+            tuples.append((t_point, "| |", secondary_color))
             t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+4)
-            lines.append((t_point, "| |", self.secondary_color))
+            tuples.append((t_point, "| |", secondary_color))
             t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+5)
-            lines.append((t_point, "!_!", self.secondary_color))
+            tuples.append((t_point, "!_!", secondary_color))
             t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+6)
-            lines.append((t_point, " _ ", self.secondary_color))
+            tuples.append((t_point, " _ ", secondary_color))
             t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+7)
-            lines.append((t_point, "!_!", self.secondary_color))
+            tuples.append((t_point, "!_!", secondary_color))
 
         # Text.
         wrapper = textwrap.TextWrapper(width=40, max_lines=5)
         wrapped = wrapper.wrap(self.text)
         t_point = Point(10, self.point.y+7)
-        lines.append((t_point, " "*(Graphics.LENGTH-20), self.title_color))
+        tuples.append((t_point, " "*(Graphics.LENGTH-20), title_color))
         for i, text in enumerate(wrapped):
             t_point = Point(10, self.point.y+i+2)
-            lines.append((t_point, text, self.color))
+            tuples.append((t_point, text, self.color))
 
         # N and Y selection.
         n_point = Point(24, self.point.y+8)
-        n_color = self.color if self.option else self.highlight_color
+        n_color = self.color if self.option else highlight_color
         y_point = Point(Graphics.LENGTH-25, self.point.y+8)
-        y_color = self.highlight_color if self.option else self.color
-        lines.append((n_point, "N", n_color))
-        lines.append((y_point, "Y", y_color))
+        y_color = highlight_color if self.option else self.color
+        tuples.append((n_point, "N", n_color))
+        tuples.append((y_point, "Y", y_color))
 
-        return lines
+        return tuples
 
 class Button(UIElement):
     """
@@ -332,13 +581,16 @@ class Button(UIElement):
         # The text to display.
         self.text = text
 
-        # The hovered color.
-        self.hovered_color = 0
+        # Drawing parameters.
+        self.decorations = {
+            # The color of this Button when it's hovered.
+            "hovered color": 0,
 
-        # The disabled color.
-        self.inactive_color = 0
+            # The color of this Button when it's inactive.
+            "inactive color": 0
+        }
 
-        # An inactive button uses inactive_color.
+        # An inactive Button uses inactive_color.
         self.active = True
 
         # A Button can be hovered.
@@ -360,7 +612,7 @@ class Button(UIElement):
         Args:
             color (int): The new color.
         """
-        self.hovered_color = color
+        self.decorations["hovered color"] = color
 
     def set_inactive_color(self, color):
         """
@@ -369,7 +621,7 @@ class Button(UIElement):
         Args:
             color (int): The new color.
         """
-        self.inactive_color = color
+        self.decorations["inactive color"] = color
 
     def set_active(self, active):
         """
@@ -410,9 +662,9 @@ class Button(UIElement):
     def to_tuples(self):
         color = self.color
         if not self.is_active():
-            color = self.inactive_color
+            color = self.decorations["inactive color"]
         elif self.is_hovered():
-            color = self.hovered_color
+            color = self.decorations["hovered color"]
         return [(self.point, self.text, color)]
 
 class LongTextBox(UIElement):
