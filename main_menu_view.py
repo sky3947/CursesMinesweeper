@@ -126,20 +126,11 @@ class MainMenuView(View):
         """
         Initializes a reusable Popup.
         """
-        popup_controls = {
-            "q": self.reset_popup,
-            "w": self.toggle_choice,
-            "a": self.toggle_choice,
-            "s": self.toggle_choice,
-            "d": self.toggle_choice,
-            self.graphics.ENTER_KEY: self.toggle_choice
-        }
-        self.popup = Popup(Point(0, 10), "", "")
+        self.popup = Popup(Point(0, 10), self, "", "")
         self.popup.set_highlight_color(self.graphics.HIGHLIGHT)
         self.popup.set_secondary_color(self.graphics.DIM)
         title_color = self.graphics.BRIGHT | self.graphics.UNDERLINE
         self.popup.set_title_color(title_color)
-        self.popup.set_controls(popup_controls)
         self.popup.set_enabled(False)
         self.uielements.append(self.popup)
 
@@ -259,7 +250,7 @@ class MainMenuView(View):
         )
         self.popup.set_text(msg)
         self.popup.set_title("DELETE SAVE?")
-        self.popup.change_control("m", self.delete_save_popup_click)
+        self.popup.set_action(self.delete_save_popup_action)
         self.set_focused_ui(self.popup)
         self.popup.set_enabled(True)
 
@@ -284,7 +275,7 @@ class MainMenuView(View):
             )
             self.popup.set_text(msg)
             self.popup.set_title("OVERRIDE SAVE?")
-            self.popup.change_control("m", self.new_game_popup_click)
+            self.popup.set_action(self.new_game_popup_click)
             self.set_focused_ui(self.popup)
             self.popup.set_enabled(True)
 
@@ -292,21 +283,7 @@ class MainMenuView(View):
     # Popup controls.
     #
 
-    def reset_popup(self):
-        """
-        Closes (disables) the Popup.
-        """
-        self.popup.set_enabled(False)
-        self.popup.set_option(False)
-        self.set_focused_ui(None)
-
-    def toggle_choice(self):
-        """
-        Toggles the selected option in the Popup.
-        """
-        self.popup.set_option(not self.popup.get_option())
-
-    def delete_save_popup_click(self):
+    def delete_save_popup_action(self):
         """
         Handles Popup response for deleting a saved game.
         """
@@ -322,8 +299,6 @@ class MainMenuView(View):
             self.selected = self.buttons[1]
             self.update_information_box_text()
 
-        self.reset_popup()
-
     def new_game_popup_click(self):
         """
         Handles Popup response for starting a new game.
@@ -333,6 +308,4 @@ class MainMenuView(View):
         """
         if self.popup.get_option():
             return Action("goto new game view", [])
-
-        self.reset_popup()
         return None

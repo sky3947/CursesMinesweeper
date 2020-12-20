@@ -146,7 +146,7 @@ class UIElement(ABC):
 
 class FocusableUIElement(UIElement):
     """
-    A FocusableUIElement has View-defined controls.
+    A FocusableUIElement has re-defineable controls.
     """
     def __init__(self, uitype, point):
         """
@@ -403,7 +403,7 @@ class Popup(FocusableUIElement):
     """
     A Popup prompts for a Y/N response.
     """
-    def __init__(self, point, title="CONTINUE ON?", text=""):
+    def __init__(self, point, view, title="CONTINUE ON?", text=""):
         """
         Constructs a Popup and returns it.
 
@@ -416,6 +416,9 @@ class Popup(FocusableUIElement):
         """
         # Give this UIElement the Popup UI type.
         super().__init__(UIType.Popup, point)
+
+        # Keep track of the View so this UIElement can be unfocused.
+        self.view = view
 
         # The title of the Popup.
         self.title = title
@@ -436,6 +439,17 @@ class Popup(FocusableUIElement):
 
             # The highlight color when drawing Y and N options.
             "highlight color": 0
+        }
+
+        # Controls.
+        self.controls = {
+            "q": self.reset_popup,
+            "w": lambda: self.set_option(not self.get_option()),
+            "a": lambda: self.set_option(not self.get_option()),
+            "s": lambda: self.set_option(not self.get_option()),
+            "d": lambda: self.set_option(not self.get_option()),
+            Graphics.ENTER_KEY: lambda: self.set_option(not self.get_option()),
+            "m": self.click_action
         }
 
     def set_title(self, title):
@@ -500,6 +514,26 @@ class Popup(FocusableUIElement):
             color (int): The new highlight color.
         """
         self.decorations["highlight color"] = color
+
+    def reset_popup(self):
+        """
+        Closes the Popup.
+        """
+        self.set_enabled(False)
+        self.set_option(False)
+        self.view.set_focused_ui(None)
+
+    def click_action(self, params=()):
+        """
+        Resets the Popup and returns the click function's result.
+
+        Args:
+            params (tuple, optional): Function parameters for the click
+                function. Defaults to ().
+        """
+        result = self.click(params)
+        self.reset_popup()
+        return result
 
     def to_tuples(self):
         # Colors
