@@ -27,6 +27,9 @@ class Graphics:
     # Enter key.
     ENTER_KEY = chr(10)
 
+    # Backspace key.
+    BACKSPACE_KEY = chr(263)
+
     # Symbol used for mines.
     MINE_KEY = chr(0x00A4)
 

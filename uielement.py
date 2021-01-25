@@ -163,6 +163,9 @@ class FocusableUIElement(UIElement):
         # This FocusableUIElement is focusable.
         self.focusable = True
 
+        # Blocks controls from the View if True.
+        self.blocking = True
+
         # A FocusableUIElement has View-defined controls.
         self.controls = {}
 
@@ -174,6 +177,15 @@ class FocusableUIElement(UIElement):
             controls (dict): The set of controls to use.
         """
         self.controls = controls
+
+    def is_blocking(self):
+        """
+        Checks if this FocusableUIElement is blocking other input.
+
+        Returns:
+            bool: The blocking boolean.
+        """
+        return self.blocking
 
     def change_control(self, name, value):
         """
@@ -198,8 +210,11 @@ class NumberField(FocusableUIElement):
             value (int): The starting value.
             maximum (int): The maximum value.
         """
-        # Give this UIElement the Popup UI type.
+        # Give this UIElement the Popup UI type and starting Point.
         super().__init__(UIType.NumberField, point)
+
+        # Doesn't block other UIElement controls.
+        self.blocking = False
 
         # The minimum value of this NumberField.
         self.minimum = min(value, 0)
@@ -212,6 +227,12 @@ class NumberField(FocusableUIElement):
 
         # The minimum (drawn) length of this NumberField.
         self.min_length = 0
+
+        # An inactive NumberField uses inactive_color.
+        self.active = True
+
+        # A NumberField can be hovered.
+        self.hovered = False
 
         # Drawing parameters.
         self.decorations = {
@@ -231,11 +252,37 @@ class NumberField(FocusableUIElement):
             "left justify": True
         }
 
-        # An inactive NumberField uses inactive_color.
-        self.active = True
+        # Controls.
+        self.controls = {
+            Graphics.BACKSPACE_KEY: self.backspace,
+            "0": lambda: self.add_digit(0),
+            "1": lambda: self.add_digit(1),
+            "2": lambda: self.add_digit(2),
+            "3": lambda: self.add_digit(3),
+            "4": lambda: self.add_digit(4),
+            "5": lambda: self.add_digit(5),
+            "6": lambda: self.add_digit(6),
+            "7": lambda: self.add_digit(7),
+            "8": lambda: self.add_digit(8),
+            "9": lambda: self.add_digit(9)
+        }
 
-        # A NumberField can be hovered.
-        self.hovered = False
+    def add_digit(self, digit):
+        """
+        Appends a digit to the end of the value.
+
+        Args:
+            digit (int): The digit to append.
+        """
+        self.set_value(self.value*10 + digit)
+        self.fix_bounds()
+
+    def backspace(self):
+        """
+        Divides the value by 10 (pressing backspace.)
+        """
+        self.set_value(self.value//10)
+        self.fix_bounds()
 
     def set_minimum(self, minimum):
         """
