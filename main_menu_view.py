@@ -84,13 +84,10 @@ class MainMenuView(View):
 
     def move_cursor(self, direction):
         """
-        Moves the selected Button in a Direction.
+        Changes the selected Button to another in a Direction.
 
         Args:
             direction (Direction): The Direction to move the cursor.
-
-        Returns:
-            Action: An empty Action.
         """
         movement = 1
         last_input = ""
@@ -112,12 +109,12 @@ class MainMenuView(View):
             next_but_ind = (cur_but_ind + movement) % len(self.buttons)
             while not self.buttons[next_but_ind].is_active():
                 next_but_ind = (next_but_ind + movement) % len(self.buttons)
-            next_active_button = self.buttons[next_but_ind]
+            next_selected_button = self.buttons[next_but_ind]
 
             # Update Buttons and information box.
             self.selected.set_hovered(False)
-            next_active_button.set_hovered(True)
-            self.selected = next_active_button
+            next_selected_button.set_hovered(True)
+            self.selected = next_selected_button
             self.update_information_box_text()
 
             self.controller.set_last_inp(last_input)

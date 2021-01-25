@@ -45,6 +45,10 @@ class View(ABC):
         reaction = None
         if self.focused_ui is not None and self.focused_ui.is_focusable():
             reaction = self.focused_ui.controls.get(inp, mt_reaction)
+            if not self.focused_ui.is_blocking():
+                # Run focused_ui reaction first
+                reaction()
+                reaction = self.controls.get(inp, mt_reaction)
         else:
             reaction = self.controls.get(inp, mt_reaction)
 

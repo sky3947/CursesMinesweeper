@@ -5,8 +5,8 @@ difficulty.
 
 import math
 from view import View
-from utility import Point, Action
-from uielement import TextBox, LongTextBox, Button
+from utility import Point, Action, Direction
+from uielement import UIType, TextBox, LongTextBox, Button, NumberField
 
 class NewGameView(View):
     """
@@ -61,10 +61,89 @@ class NewGameView(View):
         self.make_info_box()
 
         # Map of input to functions.
+        enter = self.graphics.ENTER_KEY
         self.controls = {
             # Pressing "q" will go back to the main menu.
-            "q": lambda: Action("goto main menu view", [])
+            "q": lambda: Action("goto main menu view", []),
+
+            # Movement keys.
+            "w": lambda: self.move_cursor(Direction.U),
+            "a": lambda: self.move_cursor(Direction.L),
+            "s": lambda: self.move_cursor(Direction.D),
+            "d": lambda: self.move_cursor(Direction.R),
+
+            # Repeat the last valid input.
+            enter: self.repeat_last_valid_input
         }
+
+    def repeat_last_valid_input(self):
+        """
+        Repeats the last valid input.
+
+        Returns:
+            Action: The Action to pass to the controller.
+        """
+        return self.parse(self.controller.get_last_inp())
+
+    def move_cursor(self, direction):
+        """
+        Changes the selected Button or NumberField to another in a
+        Direction.
+
+        Args:
+            direction (Direction): The Direction to move the cursor.
+        """
+        movement = 1
+        last_input = ""
+        if direction is Direction.U:
+            movement = -1
+            last_input = "w"
+        elif direction is Direction.L:
+            movement = -1
+            last_input = "a"
+        elif direction is Direction.D:
+            last_input = "s"
+        elif direction is Direction.R:
+            last_input = "d"
+
+        uielements = self.buttons + self.numberfields
+
+        # Button selection rules:
+        # Custom <- Easy -> Medium
+        # Button | NumberField <- NumberField -> NumberField
+        if movement == 1:
+            if self.selected is uielements[-1]:
+                next_selected = self.numberfields[0]
+            else:
+                next_selected = uielements[uielements.index(self.selected)+1]
+        else:
+            if self.selected is uielements[0]:
+                next_selected = self.buttons[-1]
+            else:
+                next_selected = uielements[uielements.index(self.selected)-1]
+
+        # Update UIElement hovering.
+        self.selected.set_hovered(False)
+        next_selected.set_hovered(True)
+
+        # Update changed settings.
+        if self.selected is self.numberfields[0]:
+            self.options["custom"]["length"] = self.selected.value
+        elif self.selected is self.numberfields[1]:
+            self.options["custom"]["height"] = self.selected.value
+        elif self.selected is self.numberfields[2]:
+            self.options["custom"]["density"] = self.selected.value
+
+        # Update NumberField focus.
+        if next_selected.get_type() is UIType.NumberField:
+            self.set_focused_ui(next_selected)
+        else:
+            self.set_focused_ui(None)
+
+        self.selected = next_selected
+        self.update_information_box_text()
+
+        self.controller.set_last_inp(last_input)
 
     def update_information_box_text(self):
         """
@@ -89,35 +168,61 @@ class NewGameView(View):
             length = self.options["hard"]["length"]
             height = self.options["hard"]["height"]
             density = self.options["hard"]["density"]
-        elif self.selected is self.buttons[3]:
+        else:
             message = "Customized settings."
             length = self.options["custom"]["length"]
             height = self.options["custom"]["height"]
             density = self.options["custom"]["density"]
 
         self.info_message_textbox.set_text(message)
-        self.info_length_textbox.set_text("Length: " + str(length))
-        self.info_height_textbox.set_text("Height: " + str(height))
+        self.numberfields[0].set_value(length)
+        self.numberfields[1].set_value(height)
         mines = math.floor(length * height * density / 100)
-        mines_msg = "Mine density: {}% ({} mines)".format(density, mines)
-        self.info_mines_textbox.set_text(mines_msg)
+        num_mines_msg = "% ({} mines)".format(mines)
+        self.numberfields[2].set_value(density)
+        self.numberfields[2].set_postfix(num_mines_msg)
 
     def make_info_box(self):
         """
         Creates the info box to explain each difficulty.
         """
+        # Color options.
+        hovered_color = self.graphics.HIGHLIGHT
+        inactive_color = self.graphics.DIM
+
+        # Difficulty-specific message.
         self.info_message_textbox = TextBox(Point(1, 10))
-        self.info_length_textbox = TextBox(Point(1, 13))
-        self.info_height_textbox = TextBox(Point(1, 14))
-        self.info_mines_textbox = TextBox(Point(1, 15))
-        self.update_information_box_text()
+
+        # NumberField for the length.
+        info_length_numberfield = NumberField(Point(1, 13), 0, 1024)
+        info_length_numberfield.set_hovered_color(hovered_color)
+        info_length_numberfield.set_inactive_color(inactive_color)
+        info_length_numberfield.set_prefix("Length: ")
+
+        # NumberField for the height.
+        info_height_numberfield = NumberField(Point(1, 14), 0, 1024)
+        info_height_numberfield.set_hovered_color(hovered_color)
+        info_height_numberfield.set_inactive_color(inactive_color)
+        info_height_numberfield.set_prefix("Height: ")
+
+        # NumberField for mine density.
+        info_mines_numberfield = NumberField(Point(1, 15), 0, 100)
+        info_mines_numberfield.set_hovered_color(hovered_color)
+        info_mines_numberfield.set_inactive_color(inactive_color)
+        info_mines_numberfield.set_prefix("Mine density: ")
+        # Postfix is updated in self.update_information_box_text().
 
         self.uielements.append(TextBox(Point(1, 12), "Difficulty Statistics:"))
         self.uielements.append(self.info_message_textbox)
-        self.uielements.append(self.info_length_textbox)
-        self.uielements.append(self.info_height_textbox)
-        self.uielements.append(self.info_mines_textbox)
+        self.uielements.append(info_length_numberfield)
+        self.uielements.append(info_height_numberfield)
+        self.uielements.append(info_mines_numberfield)
 
+        # Keep track of NumberFields.
+        self.numberfields = [info_length_numberfield, info_height_numberfield,
+            info_mines_numberfield]
+
+        self.update_information_box_text()
 
     def make_buttons(self):
         """
