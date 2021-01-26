@@ -257,7 +257,7 @@ class MainMenuView(View):
         View.
         """
         self.display_loading_screen()
-
+    
         # TODO: Load save file.
 
     def new_game(self):
@@ -301,7 +301,8 @@ class MainMenuView(View):
         Handles Popup response for starting a new game.
 
         Returns:
-            Action: The action to give the controller.
+            Action: The action to give the controller (change view to
+            new_game_view.)
         """
         if self.popup.get_option():
             return Action("goto new game view", [])
