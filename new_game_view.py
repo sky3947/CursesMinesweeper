@@ -33,30 +33,6 @@ class NewGameView(View):
         # Make Buttons.
         self.make_buttons()
 
-        # Minefield options.
-        self.options = {
-            "easy": {
-                "length": 10,
-                "height": 10,
-                "density": 10
-            },
-            "medium": {
-                "length": 30,
-                "height": 20,
-                "density": 15
-            },
-            "hard": {
-                "length": 60,
-                "height": 30,
-                "density": 20
-            },
-            "custom": {
-                "length": 10,
-                "height": 10,
-                "density": 10
-            }
-        }
-
         # Make the information box. This explains each Button.
         self.make_info_box()
 
@@ -159,12 +135,9 @@ class NewGameView(View):
         next_selected.set_hovered(True)
 
         # Update changed settings.
-        if self.selected is self.numberfields[0]:
-            self.options["custom"]["length"] = self.selected.value
-        elif self.selected is self.numberfields[1]:
-            self.options["custom"]["height"] = self.selected.value
-        elif self.selected is self.numberfields[2]:
-            self.options["custom"]["density"] = self.selected.value
+        if self.selected.get_type() is UIType.NumberField:
+            values = [numberfield.value for numberfield in self.numberfields]
+            self.controller.set_custom_field_options(values)
 
         # Update NumberField focus.
         condition = next_selected.get_type() is UIType.NumberField
@@ -180,30 +153,37 @@ class NewGameView(View):
         """
         Updates the information box.
         """
+        options = self.controller.get_minefield_options()
         message = "Unrecognized difficulty."
         length = 10
         height = 10
         density = 10
+
         if self.selected is self.buttons[0]:
             message = "Small field and easy mine density."
-            length = self.options["easy"]["length"]
-            height = self.options["easy"]["height"]
-            density = self.options["easy"]["density"]
+            option = options["easy"]
+            length = option.l
+            height = option.h
+            density = option.d
         elif self.selected is self.buttons[1]:
             message = "Increased field area and mine density."
-            length = self.options["medium"]["length"]
-            height = self.options["medium"]["height"]
-            density = self.options["medium"]["density"]
+            option = options["medium"]
+            length = option.l
+            height = option.h
+            density = option.d
         elif self.selected is self.buttons[2]:
             message = "Challenging field and mine density."
-            length = self.options["hard"]["length"]
-            height = self.options["hard"]["height"]
-            density = self.options["hard"]["density"]
-        else:
+            option = options["hard"]
+            length = option.l
+            height = option.h
+            density = option.d
+        elif (self.selected is self.buttons[3] or
+                self.selected.get_type() is UIType.NumberField):
             message = "Customized settings."
-            length = self.options["custom"]["length"]
-            height = self.options["custom"]["height"]
-            density = self.options["custom"]["density"]
+            option = options["custom"]
+            length = option.l
+            height = option.h
+            density = option.d
 
         self.info_message_textbox.set_text(message)
         self.numberfields[0].set_value(length)
@@ -243,7 +223,7 @@ class NewGameView(View):
         info_mines_numberfield.set_prefix("Mine density: ")
         # Postfix is updated in self.update_information_box_text().
 
-        self.uielements.append(TextBox(Point(1, 12), "Difficulty Statistics:"))
+        self.uielements.append(TextBox(Point(1, 12), "Difficulty settings:"))
         self.uielements.append(self.info_message_textbox)
         self.uielements.append(info_length_numberfield)
         self.uielements.append(info_height_numberfield)
@@ -363,4 +343,6 @@ class NewGameView(View):
         Returns:
             Action: The action to give the controller.
         """
+        if self.popup.get_option():
+            return Action("goto generating view", [])
         return None

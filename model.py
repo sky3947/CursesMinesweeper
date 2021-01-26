@@ -4,6 +4,7 @@ This class is the model for the Minesweeper program.
 
 import os
 from controller import Controller
+from utility import Option
 
 class Model:
     """
@@ -30,6 +31,27 @@ class Model:
 
         # The current view.
         self.view = None
+
+        # Minefield options.
+        self.options = {
+            "easy": Option(10, 10, 10),
+            "medium": Option(30, 20, 15),
+            "hard": Option(60, 30, 20),
+            "custom": Option(10, 10, 10)
+        }
+
+        # The current state of the minefield.
+        self.minefield = None
+
+    def set_custom_field_options(self, values):
+        """
+        Sets the length, height, and density values for generating a
+        custom minefield.
+
+        Args:
+            values (list): An array [length, height, density].
+        """
+        self.options["custom"] = Option(*values)
 
     def has_saved_game(self):
         """

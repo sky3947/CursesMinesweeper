@@ -23,5 +23,8 @@ class Direction(Enum):
 # A Point consists of an x-coordinate and a y-coordinate.
 Point = namedtuple("Point", "x y")
 
+# An Option consists of length, height, and density integers.
+Option = namedtuple("Option", "l h d")
+
 # An action has a primary input and an array of secondary inputs.
 Action = namedtuple("Action", "primary secondary")

@@ -88,6 +88,12 @@ class Graphics:
         """
         self.screen.addstr(point.y, point.x, inp, color or self.BRIGHT)
 
+    def refresh(self):
+        """
+        Refreshes the screen for threading purposes.
+        """
+        self.screen.refresh()
+
     def clear(self, color=None):
         """
         Clears the curses window.

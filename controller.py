@@ -6,6 +6,7 @@ from graphics import Graphics
 from utility import Flow
 from main_menu_view import MainMenuView
 from new_game_view import NewGameView
+from generating_view import GeneratingView
 
 class Controller:
     """
@@ -33,10 +34,14 @@ class Controller:
         # Map of actions to functions.
         gngv_fun = lambda: self.action_change_view(NewGameView(self))
         gmmv_fun = lambda: self.action_change_view(MainMenuView(self))
+        ggv_fun = lambda: self.action_change_view(GeneratingView(self))
+        glv_fun = lambda: Flow.PASS
         self.actions = {
             "quit": self.action_quit,
             "goto new game view": gngv_fun,
-            "goto main menu view": gmmv_fun
+            "goto main menu view": gmmv_fun,
+            "goto generating view": ggv_fun,
+            "goto loading view": glv_fun
         }
 
     def has_saved_game(self):
@@ -93,6 +98,25 @@ class Controller:
         """
         self.model.change_view(view)
         self.set_last_inp(view.get_first_input())
+
+    def set_custom_field_options(self, values):
+        """
+        Tells the model to set the length, height, and density values
+        for generating a custom minefield.
+
+        Args:
+            values (list): An array [length, height, density].
+        """
+        self.model.set_custom_field_options(values)
+
+    def get_minefield_options(self):
+        """
+        Gets the minefield generation options from the model.
+
+        Returns:
+            dict: The table of difficulty options.
+        """
+        return self.model.options
 
     def act(self, action):
         """

@@ -257,7 +257,7 @@ class MainMenuView(View):
         View.
         """
         self.display_loading_screen()
-    
+
         # TODO: Load save file.
 
     def new_game(self):
