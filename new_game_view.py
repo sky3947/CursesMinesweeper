@@ -6,7 +6,7 @@ difficulty.
 import math
 from view import View
 from utility import Point, Action, Direction
-from uielement import UIType, TextBox, LongTextBox, Button, NumberField
+from uielement import UIType, TextBox, LongTextBox, Button, NumberField, Popup
 
 class NewGameView(View):
     """
@@ -60,6 +60,9 @@ class NewGameView(View):
         # Make the information box. This explains each Button.
         self.make_info_box()
 
+        # Initializes popup.
+        self.make_popup()
+
         # Map of input to functions.
         enter = self.graphics.ENTER_KEY
         self.controls = {
@@ -73,8 +76,37 @@ class NewGameView(View):
             "d": lambda: self.move_cursor(Direction.R),
 
             # Repeat the last valid input.
-            enter: self.repeat_last_valid_input
+            enter: self.repeat_last_valid_input,
+
+            # Click the selected UIElement.
+            "m": self.click
         }
+
+    def click(self):
+        """
+        Clicks the selected UIElement.
+
+        Args:
+            params (list): The list of parameters to pass to the
+                UIElement.
+
+        Returns:
+            Action: The Action to pass to the controller.
+        """
+        return self.selected.click()
+
+    def make_popup(self):
+        """
+        Initializes a reusable Popup.
+        """
+        self.popup = Popup(Point(0, 2), self, "", "")
+        self.popup.set_highlight_color(self.graphics.HIGHLIGHT)
+        self.popup.set_secondary_color(self.graphics.DIM)
+        title_color = self.graphics.BRIGHT | self.graphics.UNDERLINE
+        self.popup.set_title_color(title_color)
+        self.popup.set_enabled(False)
+        self.popup.set_action(self.custom_field_popup_action)
+        self.uielements.append(self.popup)
 
     def repeat_last_valid_input(self):
         """
@@ -109,7 +141,7 @@ class NewGameView(View):
         uielements = self.buttons + self.numberfields
 
         # Button selection rules:
-        # Custom <- Easy -> Medium
+        # Hard <- Custom <- Easy -> Medium -> Hard -> Custom -> NumberField
         # Button | NumberField <- NumberField -> NumberField
         if movement == 1:
             if self.selected is uielements[-1]:
@@ -135,10 +167,9 @@ class NewGameView(View):
             self.options["custom"]["density"] = self.selected.value
 
         # Update NumberField focus.
-        if next_selected.get_type() is UIType.NumberField:
-            self.set_focused_ui(next_selected)
-        else:
-            self.set_focused_ui(None)
+        condition = next_selected.get_type() is UIType.NumberField
+        next_focus = next_selected if condition else None
+        self.set_focused_ui(next_focus)
 
         self.selected = next_selected
         self.update_information_box_text()
@@ -236,24 +267,28 @@ class NewGameView(View):
         easy_button = Button(Point(1, 4), "Easy")
         easy_button.set_hovered_color(hovered_color)
         easy_button.set_inactive_color(disabled_color)
+        easy_button.set_action(self.mk_easy_field)
         self.uielements.append(easy_button)
 
         # Medium Button.
         medium_button = Button(Point(1, 5), "Medium")
         medium_button.set_hovered_color(hovered_color)
         medium_button.set_inactive_color(disabled_color)
+        medium_button.set_action(self.mk_medium_field)
         self.uielements.append(medium_button)
 
         # Hard Button.
         hard_button = Button(Point(1, 6), "Hard")
         hard_button.set_hovered_color(hovered_color)
         hard_button.set_inactive_color(disabled_color)
+        hard_button.set_action(self.mk_hard_field)
         self.uielements.append(hard_button)
 
         # Custom Button.
         custom_button = Button(Point(1, 7), "Custom")
         custom_button.set_hovered_color(hovered_color)
         custom_button.set_inactive_color(disabled_color)
+        custom_button.set_action(self.mk_custom_field)
         self.uielements.append(custom_button)
 
         # Keep track of Buttons.
@@ -285,3 +320,47 @@ class NewGameView(View):
         ]
         controls = LongTextBox(Point(0, self.graphics.HEIGHT-3), text)
         self.uielements.append(controls)
+
+    #
+    # Button functionality.
+    #
+
+    def mk_custom_field(self):
+        """
+        Show a popup to confirm the minefield options. Generates the
+        minefield if confirmed.
+        """
+        msg = "Do you want to generate a minefield with these options?"
+        self.popup.set_text(msg)
+        self.popup.set_title("GENERATE  FIELD?")
+        self.set_focused_ui(self.popup)
+        self.popup.set_enabled(True)
+
+    def mk_hard_field(self):
+        """
+        Generates a minefield with hard difficulty.
+        """
+
+    def mk_medium_field(self):
+        """
+        Generates a minefield with medium difficulty.
+        """
+
+    def mk_easy_field(self):
+        """
+        Generates a minefield with easy difficulty.
+        """
+
+    #
+    # Popup controls.
+    #
+
+    def custom_field_popup_action(self):
+        """
+        Handles Popup response for starting a new game with custom
+        settings.
+
+        Returns:
+            Action: The action to give the controller.
+        """
+        return None
