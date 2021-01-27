@@ -3,6 +3,8 @@ This class is the model for the Minesweeper program.
 """
 
 import os
+import random
+import math
 from controller import Controller
 from utility import Option
 
@@ -32,26 +34,208 @@ class Model:
         # The current view.
         self.view = None
 
-        # Minefield options.
+        # Minefield Options.
         self.options = {
             "easy": Option(10, 10, 10),
             "medium": Option(30, 20, 15),
             "hard": Option(60, 30, 20),
-            "custom": Option(10, 10, 10)
+            "custom": Option(10, 10, 10),
+            "custom_minimums": Option(2, 2, 1),
+            "custom_maximums": Option(1024, 1024, 99)
         }
+
+        # An Option to generate a minefield with.
+        self.difficulty = None
+
+        # A user feedback value for minefield generation (percentage.)
+        self.gen_progress = 0
 
         # The current state of the minefield.
         self.minefield = None
 
-    def set_custom_field_options(self, values):
+    class Cell:
+        """
+        Stores information about an individual cell in the minefield.
+        """
+        def __init__(self, opened, mine, flagged, number):
+            """
+            Constructs an instance of Cell and returns it.
+
+            Args:
+                opened (bool): Whether or not this Cell has been opened.
+                mine (bool): Whether or not this Cell is a mine.
+                flagged (bool): Whether or not this Cell has been
+                    flagged.
+                number (int): The supposed number of mines around this
+                    Cell.
+            """
+            self.opened = opened
+            self.mine = mine
+            self.flagged = flagged
+            self.number = number
+
+        def is_opened(self):
+            """
+            Checks if this cell has been opened.
+
+            Returns:
+                bool: True if opened, False otherwise.
+            """
+            return self.opened
+
+        def open(self):
+            """
+            Opens this cell.
+            """
+            self.opened = True
+
+        def is_mine(self):
+            """
+            Checks if this cell is a mine.
+
+            Returns:
+                bool: True if mine, False otherwise.
+            """
+            return self.mine
+
+        def set_mine(self, mine):
+            """
+            Sets whether or not this cell is a mine.
+
+            Args:
+                mine (bool): True to make this cell a mine, False
+                    otherwise.
+            """
+            self.mine = mine
+
+        def is_flagged(self):
+            """
+            Checks if this cell is flagged.
+
+            Returns:
+                bool: True if flagged, False otherwise.
+            """
+            return self.flagged
+
+        def set_flagged(self, flagged):
+            """
+            Sets whether or not this cell is flagged.
+
+            Args:
+                flagged (bool): True to flag this cell, False otherwise.
+            """
+            self.flagged = flagged
+
+        def get_number(self):
+            """
+            Gets the number of surrounding mines.
+
+            Returns:
+                int: The number of surrounding mines.
+            """
+            return self.number
+
+        def set_number(self, number):
+            """
+            Sets the supposed number of mines around this cell.
+
+            Args:
+                number (int): The supposed number of mines around this
+                    cell.
+            """
+            self.number = number
+
+    def generate_minefield(self):
+        """
+        Generates a minefield based on the options in self.difficulty.
+        """
+        # Parameters.
+        length = self.difficulty.l
+        height = self.difficulty.h
+        mines = self.calculate_mines(self.difficulty)
+
+        # Set up an empty minefield.
+        mk_mt_cell = lambda: self.Cell(False, False, False, 0)
+        self.minefield = [
+            [mk_mt_cell() for _ in range(length)] for _ in range(height)
+        ]
+
+        # Done when mines_left == 0.
+        mines_left = mines
+        while mines_left > 0:
+            # Pick a random cell.
+            xselected = random.randint(0, length - 1)
+            yselected = random.randint(0, height - 1)
+
+            # Try to make it a mine.
+            selected_mine = self.minefield[yselected][xselected]
+            if not selected_mine.is_mine():
+                selected_mine.set_mine(True)
+
+                # Increment the numbers around the mine.
+                xbound = (max(0, xselected - 1), min(length, xselected + 1))
+                ybound = (max(0, yselected - 1), min(height, yselected + 1))
+                for xpos in range(*xbound):
+                    for ypos in range(*ybound):
+                        cell = self.minefield[ypos][xpos]
+                        cell.set_number(cell.get_number() + 1)
+
+                # Update gen_progress.
+                mines_left -= 1
+                self.gen_progress = round((1 - (mines_left / mines)) * 100)
+
+    def reset_gen_progress(self):
+        """
+        Resets the gen_progress.
+        """
+        self.gen_progress = 0
+
+    def get_gen_progress(self):
+        """
+        Gets a user feedback value for minefield generation.
+
+        Returns:
+            int: A percentage.
+        """
+        return self.gen_progress
+
+    @staticmethod
+    def calculate_mines(option):
+        """
+        Calculates the number of mines in a minefield.
+
+        Args:
+            option (Option): An Option containing length, height, and
+            mine density.
+
+        Returns:
+            int: The number of mines generated.
+        """
+        min_mines = 1
+        max_mines = option.l * option.h - 1
+        raw_mines = math.floor(option.l * option.h * option.d / 100)
+        return min(max_mines, max(min_mines, raw_mines))
+
+    def set_difficulty(self, option):
+        """
+        Sets the difficulty of the minefield to generate.
+
+        Args:
+            option (Option): The Option containing length, height, and
+            density information.
+        """
+        self.difficulty = option
+
+    def set_custom_field_options(self, option):
         """
         Sets the length, height, and density values for generating a
         custom minefield.
 
         Args:
-            values (list): An array [length, height, density].
+            option (Option): An Option containing length, height, and
+            mine density.
         """
-        self.options["custom"] = Option(*values)
+        self.options["custom"] = option
 
     def has_saved_game(self):
         """
