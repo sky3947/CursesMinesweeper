@@ -168,9 +168,9 @@ class Model:
             yselected = random.randint(0, height - 1)
 
             # Try to make it a mine.
-            selected_mine = self.minefield[yselected][xselected]
-            if not selected_mine.is_mine():
-                selected_mine.set_mine(True)
+            selected_cell = self.minefield[yselected][xselected]
+            if not selected_cell.is_mine():
+                selected_cell.set_mine(True)
 
                 # Increment the numbers around the mine.
                 xbound = (max(0, xselected - 1), min(length, xselected + 1))
