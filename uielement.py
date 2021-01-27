@@ -275,14 +275,14 @@ class NumberField(FocusableUIElement):
             digit (int): The digit to append.
         """
         self.set_value(self.value*10 + digit)
-        self.fix_bounds()
+        if self.value > self.maximum:
+            self.fix_bounds()
 
     def backspace(self):
         """
         Divides the value by 10 (pressing backspace.)
         """
         self.set_value(self.value//10)
-        self.fix_bounds()
 
     def set_minimum(self, minimum):
         """
