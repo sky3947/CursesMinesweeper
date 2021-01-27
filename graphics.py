@@ -137,3 +137,10 @@ class Graphics:
                 input text (x, y, inp).
         """
         return (Point((win_len - len(inp)), y), inp)
+
+    @staticmethod
+    def flush_inp():
+        """
+        Flushes the input buffer of keys pressed.
+        """
+        curses.flushinp()

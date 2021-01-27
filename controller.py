@@ -44,6 +44,63 @@ class Controller:
             "goto loading view": glv_fun
         }
 
+    def calculate_mines(self, option):
+        """
+        Tells the model to calculate the number of mines in a minefield.
+
+        Args:
+            option (Option): An Option containing length, height, and
+            mine density.
+
+        Returns:
+            int: The number of mines generated.
+        """
+        return self.model.calculate_mines(option)
+
+    def generate_minefield(self):
+        """
+        Tells the model to generate a new minefield.
+        """
+        self.model.generate_minefield()
+
+    def reset_gen_progress(self):
+        """
+        Tells the model to reset the gen_progress.
+        """
+        self.model.reset_gen_progress()
+
+    def get_gen_progress(self):
+        """
+        Gets the minefield generation progress percentage from the
+        model.
+
+        Returns:
+            int: The progress percentage.
+        """
+        return self.model.get_gen_progress()
+
+    def get_difficulty(self):
+        """
+        Gets the difficulty of the minefield to be generated from the
+        model.
+
+        Returns:
+            Option: The Option containing length, height, and density
+            information.
+        """
+        return self.model.difficulty
+
+    def set_difficulty(self, option):
+        """
+        Tells the model to set the difficulty of the minefield to
+        generate.
+
+        Args:
+            option (Option): The Option containing length, height, and
+            density information.
+        """
+        self.model.set_difficulty(option)
+
     def has_saved_game(self):
         """
         Asks the model if there's a saved game.

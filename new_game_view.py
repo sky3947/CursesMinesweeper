@@ -3,9 +3,8 @@ The new game View provides options to choose a customized minesweeper
 difficulty.
 """
 
-import math
 from view import View
-from utility import Point, Action, Direction
+from utility import Point, Action, Direction, Option
 from uielement import UIType, TextBox, LongTextBox, Button, NumberField, Popup
 
 class NewGameView(View):
@@ -136,8 +135,9 @@ class NewGameView(View):
 
         # Update changed settings.
         if self.selected.get_type() is UIType.NumberField:
+            self.selected.fix_bounds()
             values = [numberfield.value for numberfield in self.numberfields]
-            self.controller.set_custom_field_options(values)
+            self.controller.set_custom_field_options(Option(*values))
 
         # Update NumberField focus.
         condition = next_selected.get_type() is UIType.NumberField
@@ -153,12 +153,17 @@ class NewGameView(View):
         """
         Updates the information box.
         """
+        # Get the minefield options from the model.
         options = self.controller.get_minefield_options()
+
+        # Default values.
         message = "Unrecognized difficulty."
         length = 10
         height = 10
         density = 10
+        option = Option(length, height, density)
 
+        # Change default values based on button hovering.
         if self.selected is self.buttons[0]:
             message = "Small field and easy mine density."
             option = options["easy"]
@@ -185,11 +190,13 @@ class NewGameView(View):
             height = option.h
             density = option.d
 
+        # Set values.
         self.info_message_textbox.set_text(message)
         self.numberfields[0].set_value(length)
         self.numberfields[1].set_value(height)
-        mines = math.floor(length * height * density / 100)
-        num_mines_msg = "% ({} mines)".format(mines)
+        mines = self.controller.calculate_mines(option)
+        plural = "" if mines == 1 else "s"
+        num_mines_msg = "% ({} mine{})".format(mines, plural)
         self.numberfields[2].set_value(density)
         self.numberfields[2].set_postfix(num_mines_msg)
 
@@ -201,23 +208,31 @@ class NewGameView(View):
         hovered_color = self.graphics.HIGHLIGHT
         inactive_color = self.graphics.DIM
 
+        # Get the minefield options from the model.
+        options = self.controller.get_minefield_options()
+        mins = options["custom_minimums"]
+        maxs = options["custom_maximums"]
+
         # Difficulty-specific message.
         self.info_message_textbox = TextBox(Point(1, 10))
 
         # NumberField for the length.
-        info_length_numberfield = NumberField(Point(1, 13), 0, 1024)
+        info_length_numberfield = NumberField(Point(1, 13), 0, maxs.l)
+        info_length_numberfield.set_minimum(mins.l)
         info_length_numberfield.set_hovered_color(hovered_color)
         info_length_numberfield.set_inactive_color(inactive_color)
         info_length_numberfield.set_prefix("Length: ")
 
         # NumberField for the height.
-        info_height_numberfield = NumberField(Point(1, 14), 0, 1024)
+        info_height_numberfield = NumberField(Point(1, 14), 0, maxs.h)
+        info_height_numberfield.set_minimum(mins.h)
         info_height_numberfield.set_hovered_color(hovered_color)
         info_height_numberfield.set_inactive_color(inactive_color)
         info_height_numberfield.set_prefix("Height: ")
 
         # NumberField for mine density.
-        info_mines_numberfield = NumberField(Point(1, 15), 0, 100)
+        info_mines_numberfield = NumberField(Point(1, 15), 0, maxs.d)
+        info_mines_numberfield.set_minimum(mins.d)
         info_mines_numberfield.set_hovered_color(hovered_color)
         info_mines_numberfield.set_inactive_color(inactive_color)
         info_mines_numberfield.set_prefix("Mine density: ")
@@ -320,16 +335,25 @@ class NewGameView(View):
         """
         Generates a minefield with hard difficulty.
         """
+        hard_options = self.controller.get_minefield_options()["hard"]
+        self.controller.set_difficulty(hard_options)
+        return Action("goto generating view", [])
 
     def mk_medium_field(self):
         """
         Generates a minefield with medium difficulty.
         """
+        medium_options = self.controller.get_minefield_options()["medium"]
+        self.controller.set_difficulty(medium_options)
+        return Action("goto generating view", [])
 
     def mk_easy_field(self):
         """
         Generates a minefield with easy difficulty.
         """
+        easy_options = self.controller.get_minefield_options()["easy"]
+        self.controller.set_difficulty(easy_options)
+        return Action("goto generating view", [])
 
     #
     # Popup controls.
@@ -344,5 +368,7 @@ class NewGameView(View):
             Action: The action to give the controller.
         """
         if self.popup.get_option():
+            custom_options = self.controller.get_minefield_options()["custom"]
+            self.controller.set_difficulty(custom_options)
             return Action("goto generating view", [])
         return None
