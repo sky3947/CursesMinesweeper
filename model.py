@@ -12,7 +12,6 @@ class Model:
     """
     Stores data and logic for Minesweeper.
     """
-
     # Game save information.
     SAVE_PATH = "./saves/"
     SAVE_FILE = SAVE_PATH + "minefield.save"
@@ -52,6 +51,12 @@ class Model:
 
         # The current state of the minefield.
         self.minefield = None
+
+        # The currently hovered cell's x-position.
+        self.hover_x = 0
+
+        # The currently hovered cell's y-position.
+        self.hover_y = 0
 
     class Cell:
         """
@@ -144,6 +149,80 @@ class Model:
                     cell.
             """
             self.number = number
+
+    def save_minefield(self):
+        """
+        Saves the minefield.
+
+        Minefield save format:
+            HEADER:
+                10 bits: LENGTH
+                10 bits: HEIGHT
+                10 bits: HOVERX
+                10 bits: HOVERY
+            DATA:
+                3N bits: CELL
+
+        LENGTH: One less than the length of the minefield.
+        HEIGHT: One less than the height of the minefield.
+        HOVERX: One less than the x-position of the hovered cell.
+        HOVERY: One less than the y-position of the hovered cell.
+        DATA: Sets of flags representing a cell. Each cell,
+            C_n(O, M, F), where n the nth cell (starting at n=0), is
+            reconstructed into minefield position x=i%(LENGTH+1),
+            y=i//(LENGTH+1). O, the "opened" flag, is only True if the
+            cell has been opened. M, the "mine" flag, is only True if
+            the cell is a mine. F, the "flagged" flag, is only True if
+            the cell has been flagged. Any extra cells C_n where
+            n>=#cells should be ignored.
+        """
+        # Parameters
+        length = self.difficulty.l
+        height = self.difficulty.h
+        hover_x = self.hover_x
+        hover_y = self.hover_y
+
+        # Decide open mode.
+        open_mode = "ab"
+        if self.has_saved_game():
+            open_mode = "wb"
+
+        # Make header (length and height)
+        piece_a = ((length-1)&0x3FF)<<30
+        piece_b = ((height-1)&0x3FF)<<20
+        piece_c = ((hover_x-1)&0x3FF)<<10
+        piece_d = (hover_y-1)&0x3FF
+        combined = piece_a|piece_b|piece_c|piece_d
+        bin_header = combined.to_bytes(5, "big")
+
+        with open(self.SAVE_FILE, open_mode) as save:
+            # Write 5 byte header.
+            save.write(bin_header)
+
+            # Write each minefield cell.
+            # Use a 3-byte buffer to save 8 cells at a time.
+            mt_buffer = 0xFFFFFF
+            buffer = mt_buffer
+            current = 0
+            max_index = length*height
+            while current < max_index:
+                for buffer_index in range(8):
+                    if not current < max_index:
+                        break
+                    # Organize cell information.
+                    cell = self.minefield[current//length][current%length]
+                    opened = cell.is_opened()
+                    mine = cell.is_mine()
+                    flagged = cell.is_flagged()
+                    cell_flags = opened<<2|mine<<1|flagged
+
+                    # Put cell into buffer.
+                    buffer &= cell_flags<<(3*(7-buffer_index))
+                    current += 1
+
+                # Write the buffer to file and reset.
+                save.write(buffer.to_bytes(3, "big"))
+                buffer = mt_buffer
 
     def generate_minefield(self):
         """
