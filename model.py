@@ -161,15 +161,15 @@ class Model:
                 10 bits: HOVERX
                 10 bits: HOVERY
             DATA:
-                3N bits: CELL
+                3n bits: CELL
 
         LENGTH: One less than the length of the minefield.
         HEIGHT: One less than the height of the minefield.
         HOVERX: One less than the x-position of the hovered cell.
         HOVERY: One less than the y-position of the hovered cell.
         DATA: Sets of flags representing a cell. Each cell,
-            C_n(O, M, F), where n the nth cell (starting at n=0), is
-            reconstructed into minefield position x=i%(LENGTH+1),
+            C_n(O, M, F), where C_n is the nth cell (starting at n=0),
+            is reconstructed into minefield position x=i%(LENGTH+1),
             y=i//(LENGTH+1). O, the "opened" flag, is only True if the
             cell has been opened. M, the "mine" flag, is only True if
             the cell is a mine. F, the "flagged" flag, is only True if
