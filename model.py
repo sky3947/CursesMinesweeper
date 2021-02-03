@@ -58,6 +58,12 @@ class Model:
         # The currently hovered cell's y-position.
         self.hover_y = 0
 
+        # The total number of mines in the minefield.
+        self.num_mines = 0
+
+        # The number of flagged cells in the minefield.
+        self.num_flagged = 0
+
     class Cell:
         """
         Stores information about an individual cell in the minefield.
@@ -209,6 +215,7 @@ class Model:
                 for buffer_index in range(8):
                     if not current < max_index:
                         break
+
                     # Organize cell information.
                     cell = self.minefield[current//length][current%length]
                     opened = cell.is_opened()
@@ -224,6 +231,107 @@ class Model:
                 save.write(buffer.to_bytes(3, "big"))
                 buffer = mt_buffer
 
+    def load_minefield(self):
+        """
+        Loads the minefield.
+        """
+        if not self.has_saved_game():
+            return
+
+        with open(self.SAVE_FILE, "rb") as save:
+            # Extract the header.
+            header = int.from_bytes(save.read(5), "big")
+            hover_y = (header&0x3FF)+1
+            hover_x = ((header>>10)&0x3FF)+1
+            height = ((header>>20)&0x3FF)+1
+            length = ((header>>30)&0x3FF)+1
+
+            self.hover_x = hover_x
+            self.hover_y = hover_y
+
+            # Create an empty minefield.
+            self.mk_mt_minefield(length, height)
+
+            # Extract cells.
+            current = 0
+            max_index = length*height
+            while current < max_index:
+                # Read the first 3 bytes into buffer.
+                buffer = int.from_bytes(save.read(3), "big")
+                for buffer_index in range(8):
+                    if not current < max_index:
+                        break
+
+                    # Extract cell.
+                    cell_flags = (buffer>>(3*(7-buffer_index)))&0x7
+                    flagged = cell_flags&0x1
+                    mine = (cell_flags>>1)&0x1
+                    opened = (cell_flags>>2)&0x1
+                    cell = self.Cell(opened, mine, flagged, 0)
+
+                    # Write cell into minefield.
+                    self.minefield[current//length][current%length] = cell
+                    current += 1
+
+        # Re-count numbers.
+        self.num_mines = 0
+        self.num_flagged = 0
+
+        for y_pos in self.minefield:
+            for x_pos in self.minefield[y_pos]:
+                cell = self.minefield[y_pos][x_pos]
+                if cell.is_opened():
+                    continue
+                if cell.is_flagged():
+                    self.num_flagged += 1
+                if cell.is_mine():
+                    # Increment mines.
+                    self.num_mines += 1
+
+                    # Increment the numbers around the mine.
+                    xbound = (max(0, x_pos - 1), min(length, x_pos + 1))
+                    ybound = (max(0, y_pos - 1), min(height, y_pos + 1))
+                    for x_near in range(*xbound):
+                        for y_near in range(*ybound):
+                            near_cell = self.minefield[y_near][x_near]
+                            near_cell.set_number(near_cell.get_number() + 1)
+
+        # Induce the difficulty.
+        density = (self.num_mines*100)//length*height
+        self.difficulty = Option(length, height, density)
+
+    def set_hover_x(self, pos):
+        """
+        Sets the hover_x value of the camera.
+
+        Args:
+            pos (int): The hover_x position.
+        """
+        self.hover_x = pos
+
+    def set_hover_y(self, pos):
+        """
+        Sets the hover_y value of the camera.
+
+        Args:
+            pos (int): The hover_y position.
+        """
+        self.hover_y = pos
+
+    def mk_mt_minefield(self, length, height):
+        """
+        Overrides the minefield in the model with an empty minefield of
+        size length * height.
+
+        Args:
+            length (int): the length of the minefield.
+            height (int): the height of the minefield.
+        """
+        mk_mt_cell = lambda: self.Cell(False, False, False, 0)
+        self.minefield = [
+            [mk_mt_cell() for _ in range(length)] for _ in range(height)
+        ]
+
     def generate_minefield(self):
         """
         Generates a minefield based on the options in self.difficulty.
@@ -234,10 +342,9 @@ class Model:
         mines = self.calculate_mines(self.difficulty)
 
         # Set up an empty minefield.
-        mk_mt_cell = lambda: self.Cell(False, False, False, 0)
-        self.minefield = [
-            [mk_mt_cell() for _ in range(length)] for _ in range(height)
-        ]
+        self.mk_mt_minefield(length, height)
+        self.num_mines = mines
+        self.num_flagged = 0
 
         # Done when mines_left == 0.
         mines_left = mines
