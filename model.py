@@ -289,12 +289,14 @@ class Model:
                     self.num_mines += 1
 
                     # Increment the numbers around the mine.
-                    xbound = (max(0, x_pos - 1), min(length, x_pos + 1))
-                    ybound = (max(0, y_pos - 1), min(height, y_pos + 1))
-                    for x_near in range(*xbound):
-                        for y_near in range(*ybound):
-                            near_cell = self.minefield[y_near][x_near]
-                            near_cell.set_number(near_cell.get_number() + 1)
+                    self.increment_numbers(x_pos, y_pos, 0, 0, length,
+                        height)
+                    # xbound = (max(0, x_pos - 1), min(length, x_pos + 1))
+                    # ybound = (max(0, y_pos - 1), min(height, y_pos + 1))
+                    # for x_near in range(*xbound):
+                    #     for y_near in range(*ybound):
+                    #         near_cell = self.minefield[y_near][x_near]
+                    #         near_cell.set_number(near_cell.get_number() + 1)
 
         # Induce the difficulty.
         density = (self.num_mines*100)//length*height
@@ -350,25 +352,49 @@ class Model:
         mines_left = mines
         while mines_left > 0:
             # Pick a random cell.
-            xselected = random.randint(0, length - 1)
-            yselected = random.randint(0, height - 1)
+            x_pos = random.randint(0, length - 1)
+            y_pos = random.randint(0, height - 1)
 
             # Try to make it a mine.
-            selected_cell = self.minefield[yselected][xselected]
+            selected_cell = self.minefield[y_pos][x_pos]
             if not selected_cell.is_mine():
                 selected_cell.set_mine(True)
 
                 # Increment the numbers around the mine.
-                xbound = (max(0, xselected - 1), min(length, xselected + 1))
-                ybound = (max(0, yselected - 1), min(height, yselected + 1))
-                for xpos in range(*xbound):
-                    for ypos in range(*ybound):
-                        cell = self.minefield[ypos][xpos]
-                        cell.set_number(cell.get_number() + 1)
+                self.increment_numbers(x_pos, y_pos, 0, 0, length,
+                    height)
+                # xbound = (max(0, xselected - 1), min(length, xselected + 1))
+                # ybound = (max(0, yselected - 1), min(height, yselected + 1))
+                # for xpos in range(*xbound):
+                #     for ypos in range(*ybound):
+                #         cell = self.minefield[ypos][xpos]
+                #         cell.set_number(cell.get_number() + 1)
 
                 # Update gen_progress.
                 mines_left -= 1
                 self.gen_progress = round((1 - (mines_left / mines)) * 100)
+
+    def increment_numbers(self, x_pos, y_pos, x_min, y_min, x_max, y_max):
+        """
+        Increments the numbers around a Cell (including the center
+        Cell.)
+
+        Args:
+            x_pos (int): The x-position of the center Cell.
+            y_pos (int): The y-position of the center Cell.
+            x_min (int): The minimum x-position a Cell could have.
+            y_min (int): The minimum y-position a Cell could have.
+            x_max (int): One more than the maximum x-position a Cell
+                could have.
+            y_max (int): One more than the maximym y-position a Cell
+                could have.
+        """
+        xbound = (max(x_min, x_pos - 1), min(x_max, x_pos + 1))
+        ybound = (max(y_min, y_pos - 1), min(y_max, y_pos + 1))
+        for x_near in range(*xbound):
+            for y_near in range(*ybound):
+                cell = self.minefield[y_near][x_near]
+                cell.set_number(cell.get_number() + 1)
 
     def reset_gen_progress(self):
         """
