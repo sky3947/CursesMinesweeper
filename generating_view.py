@@ -12,17 +12,6 @@ class GeneratingView(View):
     """
     Provides user with progress updates to minefield generation.
     """
-    def __init__(self, controller):
-        """
-        Instantiates a GeneratingView and returns it.
-
-        Args:
-            controller (Controller): The controller to pass user input.
-        """
-        super().__init__(controller)
-
-        # The Option containing minefield information.
-        self.option = self.controller.get_difficulty()
 
     class Feedback(threading.Thread):
         """
@@ -83,7 +72,5 @@ class GeneratingView(View):
         self.controller.reset_gen_progress()
         self.graphics.flush_inp()
 
-        # TODO: Save the minefield.
-
-        # TODO: Redirect to loading view.
+        # TODO: Redirect to game view.
         self.controller.act(Action("goto main menu view", []))

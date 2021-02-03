@@ -7,6 +7,7 @@ from utility import Flow
 from main_menu_view import MainMenuView
 from new_game_view import NewGameView
 from generating_view import GeneratingView
+from continue_game_view import ContinueGameView
 
 class Controller:
     """
@@ -32,17 +33,26 @@ class Controller:
         self.last_inp = ""
 
         # Map of actions to functions.
-        gngv_fun = lambda: self.action_change_view(NewGameView(self))
-        gmmv_fun = lambda: self.action_change_view(MainMenuView(self))
-        ggv_fun = lambda: self.action_change_view(GeneratingView(self))
-        glv_fun = lambda: Flow.PASS
+        gnegav_fun = lambda: self.action_change_view(NewGameView(self))
+        gmamev_fun = lambda: self.action_change_view(MainMenuView(self))
+        ggev_fun = lambda: self.action_change_view(GeneratingView(self))
+        gcogav_fun = lambda: self.action_change_view(ContinueGameView(self))
+        ggav_fun = lambda: Flow.PASS
+
         self.actions = {
             "quit": self.action_quit,
-            "goto new game view": gngv_fun,
-            "goto main menu view": gmmv_fun,
-            "goto generating view": ggv_fun,
-            "goto loading view": glv_fun
+            "goto new game view": gnegav_fun,
+            "goto main menu view": gmamev_fun,
+            "goto generating view": ggev_fun,
+            "goto continue game view": gcogav_fun,
+            "goto game view": ggav_fun
         }
+
+    def load_minefield(self):
+        """
+        Tells the model to load the minefield from a save file.
+        """
+        self.model.load_minefield()
 
     def calculate_mines(self, option):
         """

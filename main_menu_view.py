@@ -223,17 +223,6 @@ class MainMenuView(View):
         title = LongTextBox(start_point, banner)
         self.uielements.append(title)
 
-    def display_loading_screen(self):
-        """
-        Clears all UIElements and puts a loading text on the screen.
-        """
-        self.uielements = []
-        msg = "Loading minefield..."
-        centered = self.graphics.center_just(self.graphics.HEIGHT//2, msg)
-        loading_text = TextBox(*centered)
-        loading_text.set_color(self.graphics.BRIGHT)
-        self.uielements.append(loading_text)
-
     #
     # Button functionality.
     #
@@ -256,9 +245,7 @@ class MainMenuView(View):
         Tells the Model to load the save file and continue to the game
         View.
         """
-        self.display_loading_screen()
-
-        # TODO: Load save file.
+        return Action("goto continue game view", [])
 
     def new_game(self):
         """
@@ -275,6 +262,8 @@ class MainMenuView(View):
             self.popup.set_action(self.new_game_popup_click)
             self.set_focused_ui(self.popup)
             self.popup.set_enabled(True)
+        else:
+            return Action("goto new game view", [])
 
     #
     # Popup controls.
@@ -286,7 +275,7 @@ class MainMenuView(View):
         """
         if self.popup.get_option():
             # Delete the saved game.
-            # self.controller.delete_saved_game()
+            self.controller.delete_saved_game()
 
             # Reconfigure Buttons.
             self.buttons[0].set_active(False)
