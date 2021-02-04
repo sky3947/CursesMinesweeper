@@ -22,5 +22,5 @@ class ContinueGameView(View):
         # Load minefield.
         self.controller.load_minefield()
 
-        # TODO: Redirect to game view.
-        self.controller.act(Action("goto main menu view", []))
+        # Redirect to game view.
+        self.controller.act(Action("goto game view", []))
