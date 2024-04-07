@@ -5,9 +5,9 @@ This class is the controller for the Minesweeper program.
 from graphics import Graphics
 from utility import Flow
 from main_menu_view import MainMenuView
-from new_game_view import NewGameView
-from generating_view import GeneratingView
-from continue_game_view import ContinueGameView
+from views.new_game_view import NewGameView
+from views.generating_view import GeneratingView
+from views.continue_game_view import ContinueGameView
 
 class Controller:
     """

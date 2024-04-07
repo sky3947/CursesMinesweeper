@@ -37,7 +37,7 @@ class View(ABC):
             inp (str): A single character input from the user.
 
         Returns:
-            Action: The action to for the controller to perform.
+            Action: The action for the controller to perform.
         """
         inp = inp.lower()
         mt_reaction = lambda: Action("", [])
@@ -104,6 +104,7 @@ class View(ABC):
             if flow is Flow.RETURN:
                 return
 
+            # Use Flow.BREAK when stopping the game loop.
             if flow is Flow.BREAK:
                 break
 

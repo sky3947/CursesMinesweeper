@@ -30,6 +30,9 @@ class Graphics:
     # Backspace key.
     BACKSPACE_KEY = chr(263)
 
+    # Windows backspace key.
+    WIN_BACKSPACE_KEY = chr(8)
+
     # Symbol used for mines.
     MINE_KEY = chr(0x00A4)
 

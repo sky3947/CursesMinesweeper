@@ -210,10 +210,10 @@ class Model:
             mt_buffer = 0xFFFFFF
             buffer = mt_buffer
             current = 0
-            max_index = length*height
-            while current < max_index:
+            num_mines = length*height
+            while current < num_mines:
                 for buffer_index in range(8):
-                    if not current < max_index:
+                    if not current < num_mines:
                         break
 
                     # Organize cell information.
@@ -373,6 +373,9 @@ class Model:
                 # Update gen_progress.
                 mines_left -= 1
                 self.gen_progress = round((1 - (mines_left / mines)) * 100)
+        
+        # Save the minefield.
+        self.save_minefield()
 
     def increment_numbers(self, x_pos, y_pos, x_min, y_min, x_max, y_max):
         """

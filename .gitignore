@@ -129,4 +129,6 @@ dmypy.json
 .pyre/
 workspace.code-workspace
 .vscode/settings.json
+
+# Custom
 saves/

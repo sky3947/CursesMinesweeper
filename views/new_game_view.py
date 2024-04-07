@@ -3,7 +3,7 @@ The new game View provides options to choose a customized minesweeper
 difficulty.
 """
 
-from view import View
+from views.view import View
 from utility import Point, Action, Direction, Option
 from uielement import UIType, TextBox, LongTextBox, Button, NumberField, Popup
 

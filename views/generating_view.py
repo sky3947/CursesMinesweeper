@@ -4,8 +4,9 @@ is being generated. Then, the user is redirected to the game View. This
 is not an interactable View.
 """
 
+import time
 import threading
-from view import View
+from views.view import View
 from utility import Action
 
 class GeneratingView(View):
@@ -34,6 +35,7 @@ class GeneratingView(View):
                 params = self.view.graphics.center_just(16, str(progress)+"%")
                 self.view.graphics.draw(*params)
                 self.view.graphics.refresh()
+                time.sleep(0.05)
 
     class Generator(threading.Thread):
         """
@@ -57,7 +59,7 @@ class GeneratingView(View):
         self.graphics.clear()
 
         # Drawing text.
-        params = self.graphics.center_just(14, "Generating minefield..")
+        params = self.graphics.center_just(14, "Generating minefield...")
         self.graphics.draw(*params)
         feedback = self.Feedback(self)
         generator = self.Generator(self)

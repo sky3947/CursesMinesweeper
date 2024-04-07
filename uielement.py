@@ -255,6 +255,7 @@ class NumberField(FocusableUIElement):
         # Controls.
         self.controls = {
             Graphics.BACKSPACE_KEY: self.backspace,
+            Graphics.WIN_BACKSPACE_KEY: self.backspace,
             "0": lambda: self.add_digit(0),
             "1": lambda: self.add_digit(1),
             "2": lambda: self.add_digit(2),
@@ -603,7 +604,10 @@ class Popup(FocusableUIElement):
 
         # Title.
         t_point = Point(9, self.point.y+1)
-        tuples.append((t_point, " "*(Graphics.LENGTH-18), title_color))
+        if title_color & Graphics.UNDERLINE:
+            tuples.append((t_point, "_"*(Graphics.LENGTH-18), title_color))
+        else:
+            tuples.append((t_point, " "*(Graphics.LENGTH-18), title_color))
         t_point = Point((Graphics.LENGTH-len(self.title))//2, self.point.y+1)
         tuples.append((t_point, self.title, title_color))
 
@@ -628,7 +632,10 @@ class Popup(FocusableUIElement):
         wrapper = textwrap.TextWrapper(width=40, max_lines=5)
         wrapped = wrapper.wrap(self.text)
         t_point = Point(10, self.point.y+7)
-        tuples.append((t_point, " "*(Graphics.LENGTH-20), title_color))
+        if title_color & Graphics.UNDERLINE:
+            tuples.append((t_point, "_"*(Graphics.LENGTH-20), title_color))
+        else:
+            tuples.append((t_point, " "*(Graphics.LENGTH-20), title_color))
         for i, text in enumerate(wrapped):
             t_point = Point(10, self.point.y+i+2)
             tuples.append((t_point, text, self.color))

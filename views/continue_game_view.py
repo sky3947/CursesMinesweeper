@@ -3,7 +3,7 @@ The continue game View provides is an intermediate View to inform the
 user that the minefield is loading.
 """
 
-from view import View
+from views.view import View
 from utility import Action
 
 class ContinueGameView(View):

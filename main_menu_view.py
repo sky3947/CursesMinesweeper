@@ -3,7 +3,7 @@ The main menu View provides graphics and receives input to continue,
 start, or delete a Minesweeper game.
 """
 
-from view import View
+from views.view import View
 from utility import Action, Point, Direction
 from uielement import TextBox, LongTextBox, Button, Popup
 
