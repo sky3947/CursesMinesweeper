@@ -188,11 +188,6 @@ class Model:
         hover_x = self.hover_x
         hover_y = self.hover_y
 
-        # Decide open mode.
-        open_mode = "ab"
-        if self.has_saved_game():
-            open_mode = "wb"
-
         # Make header (length and height)
         piece_a = ((length-1)&0x3FF)<<30
         piece_b = ((height-1)&0x3FF)<<20
@@ -201,14 +196,13 @@ class Model:
         combined = piece_a|piece_b|piece_c|piece_d
         bin_header = combined.to_bytes(5, "big")
 
-        with open(self.SAVE_FILE, open_mode) as save:
+        with open(self.SAVE_FILE, "wb") as save:
             # Write 5 byte header.
             save.write(bin_header)
 
             # Write each minefield cell.
             # Use a 3-byte buffer to save 8 cells at a time.
-            mt_buffer = 0xFFFFFF
-            buffer = mt_buffer
+            buffer = 0
             current = 0
             num_mines = length*height
             while current < num_mines:
@@ -221,15 +215,15 @@ class Model:
                     opened = cell.is_opened()
                     mine = cell.is_mine()
                     flagged = cell.is_flagged()
-                    cell_flags = opened<<2|mine<<1|flagged
+                    cell_flags = (opened<<2)|(mine<<1)|flagged
 
                     # Put cell into buffer.
-                    buffer &= cell_flags<<(3*(7-buffer_index))
+                    buffer |= cell_flags<<(3*(7-buffer_index))
                     current += 1
 
                 # Write the buffer to file and reset.
                 save.write(buffer.to_bytes(3, "big"))
-                buffer = mt_buffer
+                buffer = 0
 
     def load_minefield(self):
         """
@@ -277,9 +271,8 @@ class Model:
         self.num_mines = 0
         self.num_flagged = 0
 
-        for y_pos in self.minefield:
-            for x_pos in self.minefield[y_pos]:
-                cell = self.minefield[y_pos][x_pos]
+        for y_pos, row in enumerate(self.minefield):
+            for x_pos, cell in enumerate(row):
                 if cell.is_opened():
                     continue
                 if cell.is_flagged():
@@ -291,12 +284,6 @@ class Model:
                     # Increment the numbers around the mine.
                     self.increment_numbers(x_pos, y_pos, 0, 0, length,
                         height)
-                    # xbound = (max(0, x_pos - 1), min(length, x_pos + 1))
-                    # ybound = (max(0, y_pos - 1), min(height, y_pos + 1))
-                    # for x_near in range(*xbound):
-                    #     for y_near in range(*ybound):
-                    #         near_cell = self.minefield[y_near][x_near]
-                    #         near_cell.set_number(near_cell.get_number() + 1)
 
         # Induce the difficulty.
         density = (self.num_mines*100)//length*height
@@ -311,6 +298,15 @@ class Model:
         """
         self.hover_x = pos
 
+    def get_hover_x(self):
+        """
+        Gets the hover_x value of the camera.
+
+        Returns:
+            int: The hover_x position.
+        """
+        return self.hover_x
+
     def set_hover_y(self, pos):
         """
         Sets the hover_y value of the camera.
@@ -319,6 +315,15 @@ class Model:
             pos (int): The hover_y position.
         """
         self.hover_y = pos
+
+    def get_hover_y(self):
+        """
+        Gets the hover_y value of the camera.
+
+        Returns:
+            int: The hover_y position.
+        """
+        return self.hover_y
 
     def mk_mt_minefield(self, length, height):
         """
@@ -392,8 +397,8 @@ class Model:
             y_max (int): One more than the maximym y-position a Cell
                 could have.
         """
-        xbound = (max(x_min, x_pos - 1), min(x_max, x_pos + 1))
-        ybound = (max(y_min, y_pos - 1), min(y_max, y_pos + 1))
+        xbound = (max(x_min, x_pos - 1), min(x_max - 1, x_pos + 1) + 1)
+        ybound = (max(y_min, y_pos - 1), min(y_max - 1, y_pos + 1) + 1)
         for x_near in range(*xbound):
             for y_near in range(*ybound):
                 cell = self.minefield[y_near][x_near]

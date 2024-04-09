@@ -8,6 +8,7 @@ from main_menu_view import MainMenuView
 from views.new_game_view import NewGameView
 from views.generating_view import GeneratingView
 from views.continue_game_view import ContinueGameView
+from views.game_view import GameView
 
 class Controller:
     """
@@ -37,7 +38,7 @@ class Controller:
         gmamev_fun = lambda: self.action_change_view(MainMenuView(self))
         ggev_fun = lambda: self.action_change_view(GeneratingView(self))
         gcogav_fun = lambda: self.action_change_view(ContinueGameView(self))
-        ggav_fun = lambda: Flow.PASS
+        ggav_fun = lambda: self.action_change_view(GameView(self))
 
         self.actions = {
             "quit": self.action_quit,
@@ -184,6 +185,42 @@ class Controller:
             dict: The table of difficulty options.
         """
         return self.model.options
+
+    def set_hover_x(self, pos):
+        """
+        Tells the model to set the hover_x value of the camera.
+
+        Args:
+            pos (int): The hover_x position.
+        """
+        self.model.set_hover_x(pos)
+
+    def get_hover_x(self):
+        """
+        Gets the hover_x value of the camera.
+
+        Returns:
+            int: The hover_x position.
+        """
+        return self.model.get_hover_x()
+
+    def set_hover_y(self, pos):
+        """
+        Tells the model to set the hover_y value of the camera.
+
+        Args:
+            pos (int): The hover_y position.
+        """
+        self.model.set_hover_y(pos)
+
+    def get_hover_y(self):
+        """
+        Gets the hover_y value of the camera.
+
+        Returns:
+            int: The hover_y position.
+        """
+        return self.model.get_hover_y()
 
     def act(self, action):
         """

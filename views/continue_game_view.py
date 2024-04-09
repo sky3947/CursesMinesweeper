@@ -1,5 +1,5 @@
 """
-The continue game View provides is an intermediate View to inform the
+The continue game View provides an intermediate View to inform the
 user that the minefield is loading.
 """
 
