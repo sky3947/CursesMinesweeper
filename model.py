@@ -15,6 +15,9 @@ class Model:
     # Game save information.
     SAVE_PATH = "./saves/"
     SAVE_FILE = SAVE_PATH + "minefield.save"
+    
+    if not os.path.exists(SAVE_PATH):
+        os.makedirs(SAVE_PATH)
 
     def __init__(self, screen):
         """
