@@ -3,7 +3,12 @@ This program lets the user play Minesweeper using curses for input and
 graphics.
 """
 
-import curses
+try:
+    import curses
+except ImportError:
+    print("Curses module not found. Are you on Windows? Install it using 'pip install windows-curses'")
+    exit(1)
+
 from model import Model
 
 def main(screen):
