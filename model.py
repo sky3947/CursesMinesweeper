@@ -235,6 +235,10 @@ class Model:
         if not self.has_saved_game():
             return
 
+        # Re-count numbers.
+        self.num_mines = 0
+        self.num_flagged = 0
+
         with open(self.SAVE_FILE, "rb") as save:
             # Extract the header.
             header = int.from_bytes(save.read(5), "big")
@@ -251,42 +255,38 @@ class Model:
 
             # Extract cells.
             current = 0
-            max_index = length*height
-            while current < max_index:
+            num_mines = length*height
+            while current < num_mines:
                 # Read the first 3 bytes into buffer.
                 buffer = int.from_bytes(save.read(3), "big")
                 for buffer_index in range(8):
-                    if not current < max_index:
+                    if not current < num_mines:
                         break
 
                     # Extract cell.
+                    y_pos = current//length
+                    x_pos = current%length
+                    cur_cell_num = self.minefield[y_pos][x_pos].number
                     cell_flags = (buffer>>(3*(7-buffer_index)))&0x7
                     flagged = cell_flags&0x1
                     mine = (cell_flags>>1)&0x1
                     opened = (cell_flags>>2)&0x1
-                    cell = self.Cell(opened, mine, flagged, 0)
+                    cell = self.Cell(opened, mine, flagged, cur_cell_num)
 
                     # Write cell into minefield.
                     self.minefield[current//length][current%length] = cell
+
+                    # Count flagged and mine cells.
+                    if flagged:
+                        self.num_flagged += 1
+                    if mine:
+                        self.num_mines += 1
+
+                    # Increment numbers around the mine.
+                    self.increment_numbers(x_pos, y_pos, 0, 0, length, height)
+
                     current += 1
-
-        # Re-count numbers.
-        self.num_mines = 0
-        self.num_flagged = 0
-
-        for y_pos, row in enumerate(self.minefield):
-            for x_pos, cell in enumerate(row):
-                if cell.is_opened():
-                    continue
-                if cell.is_flagged():
-                    self.num_flagged += 1
-                if cell.is_mine():
-                    # Increment mines.
-                    self.num_mines += 1
-
-                    # Increment the numbers around the mine.
-                    self.increment_numbers(x_pos, y_pos, 0, 0, length,
-                        height)
+                    self.gen_progress = round((current/num_mines) * 100)
 
         # Induce the difficulty.
         density = (self.num_mines*100)//length*height
@@ -371,12 +371,6 @@ class Model:
                 # Increment the numbers around the mine.
                 self.increment_numbers(x_pos, y_pos, 0, 0, length,
                     height)
-                # xbound = (max(0, xselected - 1), min(length, xselected + 1))
-                # ybound = (max(0, yselected - 1), min(height, yselected + 1))
-                # for xpos in range(*xbound):
-                #     for ypos in range(*ybound):
-                #         cell = self.minefield[ypos][xpos]
-                #         cell.set_number(cell.get_number() + 1)
 
                 # Update gen_progress.
                 mines_left -= 1
