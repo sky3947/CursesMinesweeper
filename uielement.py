@@ -210,7 +210,7 @@ class NumberField(FocusableUIElement):
             value (int): The starting value.
             maximum (int): The maximum value.
         """
-        # Give this UIElement the Popup UI type and starting Point.
+        # Give this UIElement the NumberField UI type and starting Point.
         super().__init__(UIType.NumberField, point)
 
         # Doesn't block other UIElement controls.

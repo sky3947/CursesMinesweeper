@@ -55,6 +55,7 @@ class Graphics:
         curses.init_pair(3, 240, 16)
         curses.init_pair(4, 16, 16)
         curses.init_pair(5, 231, 1)
+        curses.init_pair(6, 231, 234)
 
         # Black text color on white background.
         self.HIGHLIGHT = curses.color_pair(1)
@@ -70,6 +71,9 @@ class Graphics:
 
         # White text color on red background.
         self.MINE = curses.color_pair(5)
+
+        # White text color on a dark gray background.
+        self.CARD = curses.color_pair(6)
 
     def get_inp(self):
         """

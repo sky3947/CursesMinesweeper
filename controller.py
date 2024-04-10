@@ -186,6 +186,15 @@ class Controller:
         """
         return self.model.options
 
+    def get_minefield(self):
+        """
+        Gets the minefield from the model.
+
+        Returns:
+            list: The rows of the minefield.
+        """
+        return self.model.get_minefield()
+
     def set_hover_x(self, pos):
         """
         Tells the model to set the hover_x value of the camera.
@@ -221,6 +230,24 @@ class Controller:
             int: The hover_y position.
         """
         return self.model.get_hover_y()
+    
+    def get_num_flagged(self):
+        """
+        Gets the number of flagged cells.
+
+        Returns:
+            int: The number of flagged cells.
+        """
+        return self.model.get_num_flagged()
+
+    def get_num_mines(self):
+        """
+        Gets the number of mines in the minefield.
+
+        Returns:
+            int: The number of mines in the minefield.
+        """
+        return self.model.get_num_mines()
 
     def act(self, action):
         """

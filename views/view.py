@@ -39,7 +39,6 @@ class View(ABC):
         Returns:
             Action: The action for the controller to perform.
         """
-        inp = inp.lower()
         mt_reaction = lambda: Action("", [])
 
         reaction = None

@@ -416,6 +416,33 @@ class Model:
         """
         return self.gen_progress
 
+    def get_minefield(self):
+        """
+        Gets the minefield.
+
+        Returns:
+            list: The rows of the minefield.
+        """
+        return self.minefield
+
+    def get_num_flagged(self):
+        """
+        Gets the number of flagged cells.
+
+        Returns:
+            int: The number of flagged cells.
+        """
+        return self.num_flagged
+
+    def get_num_mines(self):
+        """
+        Gets the number of mines in the minefield.
+
+        Returns:
+            int: The number of mines in the minefield.
+        """
+        return self.num_mines
+
     @staticmethod
     def calculate_mines(option):
         """
