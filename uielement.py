@@ -16,6 +16,7 @@ class UIType(Enum):
     Button = 2
     Popup = 3
     NumberField = 4
+    Minefield = 5
 
 class UIElement(ABC):
     """UI elements provide methods for user interaction."""
@@ -141,7 +142,7 @@ class UIElement(ABC):
         """
         A UIElement must return an array of tuples to represent itself.
         These tuples should draw this UIElement when unpacked as
-        arguments for Graphics.draw.
+        arguments for Graphics.draw. list((Point(x, y), text, color))
         """
 
 class FocusableUIElement(UIElement):
@@ -196,6 +197,377 @@ class FocusableUIElement(UIElement):
             value (Any): The value field.
         """
         self.controls[name] = value
+
+class TextBox(UIElement):
+    """
+    A TextBox is a UIElement used to display text.
+    """
+    def __init__(self, point, text="TextBox"):
+        """
+        Constructs a TextBox and returns it.
+
+        Args:
+            point (Point): The x and y-positions of this TextBox.
+            text (str): The text to display.
+        """
+        # Give this UIElement the TextBox UI type.
+        super().__init__(UIType.TextBox, point)
+
+        # The text to display.
+        self.text = text
+
+    def set_text(self, text):
+        """
+        Sets the text of this TextBox.
+
+        Args:
+            text (str): The new text.
+        """
+        self.text = text
+
+    def to_tuples(self):
+        return [(self.point, self.text, self.color)]
+
+class LongTextBox(UIElement):
+    """
+    A LongTextBox is a UIElement used to display a block of text.
+    """
+    def __init__(self, point, lines=("LongTextBox",)):
+        """
+        Constructs a LongTextBox and returns it.
+
+        Args:
+            point (Point): The x and y-positions of this LongTextBox.
+            lines (list): The lines of text to display.
+        """
+        # Give this UIElement the LongTextBox UI type.
+        super().__init__(UIType.LongTextBox, point)
+
+        # The block of text to display.
+        self.lines = lines
+
+    def set_lines(self, lines):
+        """
+        Sets the block of text to display.
+
+        Args:
+            lines (list): The new block of text.
+        """
+        self.lines = lines
+
+    def to_tuples(self):
+        x = self.point.x
+        y = self.point.y
+        lines = enumerate(self.lines)
+        return [(Point(x, y+dy), line, self.color) for dy, line in lines]
+
+class Button(UIElement):
+    """
+    A Button is a UIElement that can be hovered, deactivated, and
+    clicked.
+    """
+    def __init__(self, point, text="Button"):
+        """
+        Constructs a Button and returns it.
+
+        Args:
+            point (Point): The x and y-positions of this Button.
+            text (str): The text to display.
+        """
+        # Give this UIElement the Button UI type.
+        super().__init__(UIType.Button, point)
+
+        # The text to display.
+        self.text = text
+
+        # Drawing parameters.
+        self.decorations = {
+            # The color of this Button when it's hovered.
+            "hovered color": 0,
+
+            # The color of this Button when it's inactive.
+            "inactive color": 0
+        }
+
+        # An inactive Button uses inactive_color.
+        self.active = True
+
+        # A Button can be hovered.
+        self.hovered = False
+
+    def set_text(self, text):
+        """
+        Sets the text of this Button.
+
+        Args:
+            text (str): The new text.
+        """
+        self.text = text
+
+    def set_hovered_color(self, color):
+        """
+        Sets this Button's hovered color.
+
+        Args:
+            color (int): The new color.
+        """
+        self.decorations["hovered color"] = color
+
+    def set_inactive_color(self, color):
+        """
+        Sets this Button's disabled color.
+
+        Args:
+            color (int): The new color.
+        """
+        self.decorations["inactive color"] = color
+
+    def set_active(self, active):
+        """
+        Sets a new active value.
+
+        Args:
+            active (bool): The new active value.
+        """
+        self.active = active
+
+    def is_active(self):
+        """
+        Checks this Button's active flag.
+
+        Returns:
+            bool: The Button's active flag.
+        """
+        return self.active
+
+    def set_hovered(self, hovered):
+        """
+        Sets this Button's hovered flag.
+
+        Args:
+            hovered (bool): The new hovered flag.
+        """
+        self.hovered = hovered
+
+    def is_hovered(self):
+        """
+        Checks this Button's hovered flag.
+
+        Returns:
+            bool: The hovered flag.
+        """
+        return self.hovered
+
+    def to_tuples(self):
+        color = self.color
+        if not self.is_active():
+            color = self.decorations["inactive color"]
+        elif self.is_hovered():
+            color = self.decorations["hovered color"]
+        return [(self.point, self.text, color)]
+
+class Popup(FocusableUIElement):
+    """
+    A Popup prompts for a Y/N response.
+    """
+    def __init__(self, point, view, title="CONTINUE ON?", text=""):
+        """
+        Constructs a Popup and returns it.
+
+        Args:
+            point (Point): The x and y-positions of this Popup.
+            title (str, optional): The title of this Popup. Defaults to
+                "CONTINUE ON?".
+            text (str, optional): The text to show in this Popup.
+                Defaults to "".
+        """
+        # Give this UIElement the Popup UI type.
+        super().__init__(UIType.Popup, point)
+
+        # Keep track of the View so this UIElement can be unfocused.
+        self.view = view
+
+        # The title of the Popup.
+        self.title = title
+
+        # The text to display.
+        self.text = text
+
+        # If False, "No" is hovered. If True, "Yes" is hovered.
+        self.option = False
+
+        # Drawing parameters.
+        self.decorations = {
+            # The title color when drawing the Popup.
+            "title color": 0,
+
+            # The secondary color when drawing the Popup.
+            "secondary color": 0,
+
+            # The highlight color when drawing Y and N options.
+            "highlight color": 0
+        }
+
+        # Controls.
+        self.controls = {
+            "q": self.reset_popup,
+            "w": lambda: self.set_option(not self.get_option()),
+            "a": lambda: self.set_option(not self.get_option()),
+            "s": lambda: self.set_option(not self.get_option()),
+            "d": lambda: self.set_option(not self.get_option()),
+            Graphics.ENTER_KEY: lambda: self.set_option(not self.get_option()),
+            "m": self.click_action
+        }
+
+    def set_title(self, title):
+        """
+        Sets the title of this Popup.
+
+        Args:
+            title (str): The new title.
+        """
+        self.title = title
+
+    def set_text(self, text):
+        """
+        Sets the text of this Popup.
+
+        Args:
+            text (str): The new text.
+        """
+        self.text = text
+
+    def set_option(self, option):
+        """
+        Sets the hovered option.
+
+        Args:
+            option (bool): The new hovered option.
+        """
+        self.option = option
+
+    def get_option(self):
+        """
+        Gets the hovered option.
+
+        Returns:
+            bool: The hovered option.
+        """
+        return self.option
+
+    def set_title_color(self, color):
+        """
+        Sets the title color.
+
+        Args:
+            color (int): The new title color.
+        """
+        self.decorations["title color"] = color
+
+    def set_secondary_color(self, color):
+        """
+        Sets the secondary color.
+
+        Args:
+            color (int): The new secondary color.
+        """
+        self.decorations["secondary color"] = color
+
+    def set_highlight_color(self, color):
+        """
+        Sets the highlight color.
+
+        Args:
+            color (int): The new highlight color.
+        """
+        self.decorations["highlight color"] = color
+
+    def reset_popup(self):
+        """
+        Closes the Popup.
+        """
+        self.set_enabled(False)
+        self.set_option(False)
+        self.view.set_focused_ui(None)
+
+    def click_action(self, params=()):
+        """
+        Resets the Popup and returns the click function's result.
+
+        Args:
+            params (tuple, optional): Function parameters for the click
+                function. Defaults to ().
+        """
+        result = self.click(params)
+        self.reset_popup()
+        return result
+
+    def to_tuples(self):
+        # Colors
+        title_color = self.decorations["title color"]
+        secondary_color = self.decorations["secondary color"]
+        highlight_color = self.decorations["highlight color"]
+
+        tuples = []
+
+        # Background
+        for i in range(10):
+            t_point = Point(0, self.point.y+i)
+            tuples.append((t_point, " "*Graphics.LENGTH, self.color))
+
+        # Top and bottom borders.
+        t_point = Point(0, self.point.y)
+        tuples.append((t_point, "="*Graphics.LENGTH, self.color))
+        t_point = Point(0, self.point.y+9)
+        tuples.append((t_point, "="*Graphics.LENGTH, self.color))
+
+        # Title.
+        t_point = Point(9, self.point.y+1)
+        if title_color & Graphics.UNDERLINE:
+            tuples.append((t_point, "_"*(Graphics.LENGTH-18), title_color))
+        else:
+            tuples.append((t_point, " "*(Graphics.LENGTH-18), title_color))
+        t_point = Point((Graphics.LENGTH-len(self.title))//2, self.point.y+1)
+        tuples.append((t_point, self.title, title_color))
+
+        # Exclamation mark decorations.
+        for i in range(2):
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+1)
+            tuples.append((t_point, " _ ", secondary_color))
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+2)
+            tuples.append((t_point, "| |", secondary_color))
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+3)
+            tuples.append((t_point, "| |", secondary_color))
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+4)
+            tuples.append((t_point, "| |", secondary_color))
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+5)
+            tuples.append((t_point, "!_!", secondary_color))
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+6)
+            tuples.append((t_point, " _ ", secondary_color))
+            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+7)
+            tuples.append((t_point, "!_!", secondary_color))
+
+        # Text.
+        wrapper = textwrap.TextWrapper(width=40, max_lines=5)
+        wrapped = wrapper.wrap(self.text)
+        t_point = Point(10, self.point.y+7)
+        if title_color & Graphics.UNDERLINE:
+            tuples.append((t_point, "_"*(Graphics.LENGTH-20), title_color))
+        else:
+            tuples.append((t_point, " "*(Graphics.LENGTH-20), title_color))
+        for i, text in enumerate(wrapped):
+            t_point = Point(10, self.point.y+i+2)
+            tuples.append((t_point, text, self.color))
+
+        # N and Y selection.
+        n_point = Point(24, self.point.y+8)
+        n_color = self.color if self.option else highlight_color
+        y_point = Point(Graphics.LENGTH-25, self.point.y+8)
+        y_color = highlight_color if self.option else self.color
+        tuples.append((n_point, "N", n_color))
+        tuples.append((y_point, "Y", y_color))
+
+        return tuples
 
 class NumberField(FocusableUIElement):
     """
@@ -447,373 +819,122 @@ class NumberField(FocusableUIElement):
 
         return tuples
 
-class Popup(FocusableUIElement):
+class Minefield(UIElement):
     """
-    A Popup prompts for a Y/N response.
+    A Minefield UIElement.
     """
-    def __init__(self, point, view, title="CONTINUE ON?", text=""):
+    def __init__(self, point, minefield):
         """
-        Constructs a Popup and returns it.
+        Constructs a Minefield and returns it.
 
         Args:
-            point (Point): The x and y-positions of this Popup.
-            title (str, optional): The title of this Popup. Defaults to
-                "CONTINUE ON?".
-            text (str, optional): The text to show in this Popup.
-                Defaults to "".
+            point (Point): The x and y-positions of this Minefield.
+            minefield (Minefield): The Minefield to display.
         """
-        # Give this UIElement the Popup UI type.
-        super().__init__(UIType.Popup, point)
+        # Give this UIElement the Minefield UI type.
+        super().__init__(UIType.Minefield, point)
 
-        # Keep track of the View so this UIElement can be unfocused.
-        self.view = view
+        # The Graphics object for colors.
+        self.graphics = Graphics(None)
 
-        # The title of the Popup.
-        self.title = title
+        # The Minefield to display.
+        self.minefield = minefield
 
-        # The text to display.
-        self.text = text
+        # The x-position of the cursor.
+        self.hover_x = 0
 
-        # If False, "No" is hovered. If True, "Yes" is hovered.
-        self.option = False
+        # The y-position of the cursor.
+        self.hover_y = 0
 
-        # Drawing parameters.
-        self.decorations = {
-            # The title color when drawing the Popup.
-            "title color": 0,
+        # The x-position of the window to start drawing the field.
+        self.window_x = 0
 
-            # The secondary color when drawing the Popup.
-            "secondary color": 0,
+        # The y-position of the window to start drawing the field.
+        self.window_y = 0
 
-            # The highlight color when drawing Y and N options.
-            "highlight color": 0
-        }
-
-        # Controls.
-        self.controls = {
-            "q": self.reset_popup,
-            "w": lambda: self.set_option(not self.get_option()),
-            "a": lambda: self.set_option(not self.get_option()),
-            "s": lambda: self.set_option(not self.get_option()),
-            "d": lambda: self.set_option(not self.get_option()),
-            Graphics.ENTER_KEY: lambda: self.set_option(not self.get_option()),
-            "m": self.click_action
-        }
-
-    def set_title(self, title):
-        """
-        Sets the title of this Popup.
-
-        Args:
-            title (str): The new title.
-        """
-        self.title = title
-
-    def set_text(self, text):
-        """
-        Sets the text of this Popup.
-
-        Args:
-            text (str): The new text.
-        """
-        self.text = text
-
-    def set_option(self, option):
-        """
-        Sets the hovered option.
-
-        Args:
-            option (bool): The new hovered option.
-        """
-        self.option = option
-
-    def get_option(self):
-        """
-        Gets the hovered option.
-
-        Returns:
-            bool: The hovered option.
-        """
-        return self.option
-
-    def set_title_color(self, color):
-        """
-        Sets the title color.
-
-        Args:
-            color (int): The new title color.
-        """
-        self.decorations["title color"] = color
-
-    def set_secondary_color(self, color):
-        """
-        Sets the secondary color.
-
-        Args:
-            color (int): The new secondary color.
-        """
-        self.decorations["secondary color"] = color
-
-    def set_highlight_color(self, color):
-        """
-        Sets the highlight color.
-
-        Args:
-            color (int): The new highlight color.
-        """
-        self.decorations["highlight color"] = color
-
-    def reset_popup(self):
-        """
-        Closes the Popup.
-        """
-        self.set_enabled(False)
-        self.set_option(False)
-        self.view.set_focused_ui(None)
-
-    def click_action(self, params=()):
-        """
-        Resets the Popup and returns the click function's result.
-
-        Args:
-            params (tuple, optional): Function parameters for the click
-                function. Defaults to ().
-        """
-        result = self.click(params)
-        self.reset_popup()
-        return result
+        # Whether or not the player lost.
+        self.lost = False
 
     def to_tuples(self):
-        # Colors
-        title_color = self.decorations["title color"]
-        secondary_color = self.decorations["secondary color"]
-        highlight_color = self.decorations["highlight color"]
-
         tuples = []
 
-        # Background
-        for i in range(10):
-            t_point = Point(0, self.point.y+i)
-            tuples.append((t_point, " "*Graphics.LENGTH, self.color))
+        height = len(self.minefield)
+        length = len(self.minefield[0])
 
-        # Top and bottom borders.
-        t_point = Point(0, self.point.y)
-        tuples.append((t_point, "="*Graphics.LENGTH, self.color))
-        t_point = Point(0, self.point.y+9)
-        tuples.append((t_point, "="*Graphics.LENGTH, self.color))
+        # Calculate the minefield window position.
+        lower_x = max(min(self.window_x, length - Graphics.LENGTH), 0)
+        upper_x = min(lower_x + Graphics.LENGTH, length)
 
-        # Title.
-        t_point = Point(9, self.point.y+1)
-        if title_color & Graphics.UNDERLINE:
-            tuples.append((t_point, "_"*(Graphics.LENGTH-18), title_color))
-        else:
-            tuples.append((t_point, " "*(Graphics.LENGTH-18), title_color))
-        t_point = Point((Graphics.LENGTH-len(self.title))//2, self.point.y+1)
-        tuples.append((t_point, self.title, title_color))
+        lower_y = max(min(self.window_y, height - (Graphics.HEIGHT - 2)), 0)
+        upper_y = min(lower_y + Graphics.HEIGHT - 2, height)
 
-        # Exclamation mark decorations.
-        for i in range(2):
-            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+1)
-            tuples.append((t_point, " _ ", secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+2)
-            tuples.append((t_point, "| |", secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+3)
-            tuples.append((t_point, "| |", secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+4)
-            tuples.append((t_point, "| |", secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+5)
-            tuples.append((t_point, "!_!", secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+6)
-            tuples.append((t_point, " _ ", secondary_color))
-            t_point = Point(i*(Graphics.LENGTH-9)+3, self.point.y+7)
-            tuples.append((t_point, "!_!", secondary_color))
+        # Draw the minefield.
+        for y in range(lower_y, upper_y):
+            for x in range(lower_x, upper_x):
+                is_hovered = x == self.hover_x and y == self.hover_y
+                cell = self.minefield[y][x]
+                screen_x = x - lower_x + self.point.x
+                screen_y = y - lower_y + self.point.y
+                t_point = Point(screen_x, screen_y)
 
-        # Text.
-        wrapper = textwrap.TextWrapper(width=40, max_lines=5)
-        wrapped = wrapper.wrap(self.text)
-        t_point = Point(10, self.point.y+7)
-        if title_color & Graphics.UNDERLINE:
-            tuples.append((t_point, "_"*(Graphics.LENGTH-20), title_color))
-        else:
-            tuples.append((t_point, " "*(Graphics.LENGTH-20), title_color))
-        for i, text in enumerate(wrapped):
-            t_point = Point(10, self.point.y+i+2)
-            tuples.append((t_point, text, self.color))
+                if cell.is_opened():
+                    if cell.is_mine():
+                        mine = Graphics.MINE_KEY
+                        cell = Graphics.CELL_KEY
+                        mine_color = (self.graphics.HIGHLIGHT_MINE if
+                                      is_hovered else
+                                      self.graphics.MINE)
+                        cell_color = (self.graphics.HIGHLIGHT_DIM_CARD if
+                                      is_hovered else
+                                      self.graphics.CARD)
 
-        # N and Y selection.
-        n_point = Point(24, self.point.y+8)
-        n_color = self.color if self.option else highlight_color
-        y_point = Point(Graphics.LENGTH-25, self.point.y+8)
-        y_color = highlight_color if self.option else self.color
-        tuples.append((n_point, "N", n_color))
-        tuples.append((y_point, "Y", y_color))
+                        tuples.append((
+                            t_point,
+                            mine if self.lost else cell,
+                            mine_color if self.lost else cell_color
+                        ))
+                        continue
+
+                    cell_number = cell.get_number()
+                    if cell_number > 0:
+                        tuples.append((
+                            t_point,
+                            str(cell_number),
+                            self.graphics.CARD
+                        ))
+                    else:
+                        tuples.append((
+                            t_point,
+                            " ",
+                            self.graphics.CARD
+                        ))
+                else:
+                    if cell.is_mine():
+                        mine = Graphics.MINE_KEY
+                        cell = Graphics.CELL_KEY
+                        mine_color = self.graphics.MINE
+                        dim_cell_color = self.graphics.DIM_CARD
+
+                        tuples.append((
+                            t_point,
+                            mine if self.lost else cell,
+                            mine_color if self.lost else dim_cell_color
+                        ))
+                    elif cell.is_flagged():
+                        dim_cell_color = self.graphics.DIM_CARD
+
+                        tuples.append((
+                            t_point,
+                            Graphics.MINE_KEY,
+                            dim_cell_color
+                        ))
+                    else:
+                        dim_cell_color = self.graphics.DIM_CARD
+
+                        tuples.append((
+                            t_point,
+                            Graphics.CELL_KEY,
+                            dim_cell_color
+                        ))
 
         return tuples
-
-class Button(UIElement):
-    """
-    A Button is a UIElement that can be hovered, deactivated, and
-    clicked.
-    """
-    def __init__(self, point, text="Button"):
-        """
-        Constructs a Button and returns it.
-
-        Args:
-            point (Point): The x and y-positions of this Button.
-            text (str): The text to display.
-        """
-        # Give this UIElement the Button UI type.
-        super().__init__(UIType.Button, point)
-
-        # The text to display.
-        self.text = text
-
-        # Drawing parameters.
-        self.decorations = {
-            # The color of this Button when it's hovered.
-            "hovered color": 0,
-
-            # The color of this Button when it's inactive.
-            "inactive color": 0
-        }
-
-        # An inactive Button uses inactive_color.
-        self.active = True
-
-        # A Button can be hovered.
-        self.hovered = False
-
-    def set_text(self, text):
-        """
-        Sets the text of this Button.
-
-        Args:
-            text (str): The new text.
-        """
-        self.text = text
-
-    def set_hovered_color(self, color):
-        """
-        Sets this Button's hovered color.
-
-        Args:
-            color (int): The new color.
-        """
-        self.decorations["hovered color"] = color
-
-    def set_inactive_color(self, color):
-        """
-        Sets this Button's disabled color.
-
-        Args:
-            color (int): The new color.
-        """
-        self.decorations["inactive color"] = color
-
-    def set_active(self, active):
-        """
-        Sets a new active value.
-
-        Args:
-            active (bool): The new active value.
-        """
-        self.active = active
-
-    def is_active(self):
-        """
-        Checks this Button's active flag.
-
-        Returns:
-            bool: The Button's active flag.
-        """
-        return self.active
-
-    def set_hovered(self, hovered):
-        """
-        Sets this Button's hovered flag.
-
-        Args:
-            hovered (bool): The new hovered flag.
-        """
-        self.hovered = hovered
-
-    def is_hovered(self):
-        """
-        Checks this Button's hovered flag.
-
-        Returns:
-            bool: The hovered flag.
-        """
-        return self.hovered
-
-    def to_tuples(self):
-        color = self.color
-        if not self.is_active():
-            color = self.decorations["inactive color"]
-        elif self.is_hovered():
-            color = self.decorations["hovered color"]
-        return [(self.point, self.text, color)]
-
-class LongTextBox(UIElement):
-    """
-    A LongTextBox is a UIElement used to display a block of text.
-    """
-    def __init__(self, point, lines=("LongTextBox",)):
-        """
-        Constructs a LongTextBox and returns it.
-
-        Args:
-            point (Point): The x and y-positions of this LongTextBox.
-            lines (list): The lines of text to display.
-        """
-        # Give this UIElement the LongTextBox UI type.
-        super().__init__(UIType.LongTextBox, point)
-
-        # The block of text to display.
-        self.lines = lines
-
-    def set_lines(self, lines):
-        """
-        Sets the block of text to display.
-
-        Args:
-            lines (list): The new block of text.
-        """
-        self.lines = lines
-
-    def to_tuples(self):
-        x = self.point.x
-        y = self.point.y
-        lines = enumerate(self.lines)
-        return [(Point(x, y+dy), line, self.color) for dy, line in lines]
-
-class TextBox(UIElement):
-    """
-    A TextBox is a UIElement used to display text.
-    """
-    def __init__(self, point, text="TextBox"):
-        """
-        Constructs a TextBox and returns it.
-
-        Args:
-            point (Point): The x and y-positions of this TextBox.
-            text (str): The text to display.
-        """
-        # Give this UIElement the TextBox UI type.
-        super().__init__(UIType.TextBox, point)
-
-        # The text to display.
-        self.text = text
-
-    def set_text(self, text):
-        """
-        Sets the text of this TextBox.
-
-        Args:
-            text (str): The new text.
-        """
-        self.text = text
-
-    def to_tuples(self):
-        return [(self.point, self.text, self.color)]

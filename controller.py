@@ -92,14 +92,14 @@ class Controller:
 
     def get_difficulty(self):
         """
-        Gets the difficulty of the minefield to be generated from the
-        model.
+        Gets the difficulty of the minefield to be generated (or already
+        generated) from the model.
 
         Returns:
             Option: The Option containing length, height, and density
             information.
         """
-        return self.model.difficulty
+        return self.model.get_difficulty()
 
     def set_difficulty(self, option):
         """

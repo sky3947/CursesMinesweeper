@@ -36,6 +36,9 @@ class Graphics:
     # Symbol used for mines.
     MINE_KEY = chr(0x00A4)
 
+    # Symbol used for closed cells.
+    CELL_KEY = chr(0x00B7)
+
 
 
     def __init__(self, screen):
@@ -54,8 +57,11 @@ class Graphics:
         curses.init_pair(2, 231, 16)
         curses.init_pair(3, 240, 16)
         curses.init_pair(4, 16, 16)
-        curses.init_pair(5, 231, 1)
+        curses.init_pair(5, 1, 16)
         curses.init_pair(6, 231, 234)
+        curses.init_pair(7, 240, 234)
+        curses.init_pair(8, 240, 231)
+        curses.init_pair(9, 1, 231)
 
         # Black text color on white background.
         self.HIGHLIGHT = curses.color_pair(1)
@@ -69,11 +75,20 @@ class Graphics:
         # Black text color on black background.
         self.DARKEST = curses.color_pair(4)
 
-        # White text color on red background.
+        # Red text color on black background.
         self.MINE = curses.color_pair(5)
 
         # White text color on a dark gray background.
         self.CARD = curses.color_pair(6)
+
+        # Gray text color on a dark gray background.
+        self.DIM_CARD = curses.color_pair(7)
+
+        # Gray text color on a white background.
+        self.HIGHLIGHT_DIM_CARD = curses.color_pair(8)
+
+        # Red text color on a white background.
+        self.HIGHLIGHT_MINE = curses.color_pair(9)
 
     def get_inp(self):
         """

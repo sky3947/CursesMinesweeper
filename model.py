@@ -470,6 +470,16 @@ class Model:
         """
         self.difficulty = option
 
+    def get_difficulty(self):
+        """
+        Gets the difficulty of the current minefield.
+
+        Returns:
+            Option: The Option containing length, height, and density
+            information.
+        """
+        return self.difficulty
+
     def set_custom_field_options(self, option):
         """
         Sets the length, height, and density values for generating a
