@@ -3,7 +3,7 @@ The game View is the main View for the game. It displays the minefield to the
 user and lets them interact with it.
 """
 
-from uielement import LongTextBox, Minefield, TextBox
+from uielement import LongTextBox, Minefield, NumberField, TextBox
 from utility import Action, Direction, Point
 from views.view import View
 
@@ -19,7 +19,7 @@ class GameView(View):
         super().__init__(controller)
 
         # The hovered input when entering this View.
-        self.first_inp = "q"
+        self.first_inp = "d"
 
         # Initialize selected x-position.
         self.hover_x = controller.get_hover_x()
@@ -45,11 +45,14 @@ class GameView(View):
         # Show the help text.
         self.show_help = False
 
+        # Show the goto cell ui.
+        self.show_goto = False
+
         # Map of input to functions.
         enter = self.graphics.ENTER_KEY
         self.controls = {
-            # Pressing "q" will go back to the main menu.
-            "q": lambda: Action("goto main menu view", []),
+            # Pressing "q" will go back to the main menu or hide the goto menu.
+            "q": self.quit,
             "?": self.toggle_help,
 
             # Gameplay controls.
@@ -72,6 +75,8 @@ class GameView(View):
             "J": lambda: self.move_camera(Direction.L, 10),
             "K": lambda: self.move_camera(Direction.D, 10),
             "L": lambda: self.move_camera(Direction.R, 10),
+
+            "g": lambda: self.toggle_goto_graphics(),
 
             # Repeat the last valid input.
             enter: self.repeat_last_valid_input
@@ -99,6 +104,18 @@ class GameView(View):
         # Make stats graphics.
         self.make_stats_graphics()
 
+        # Background UIElements for goto graphics.
+        self.goto_graphics = []
+
+        # UIElements for goto NumberFields.
+        self.goto_number_fields = {
+            "pos_x": None,
+            "pos_y": None
+        }
+
+        # Make goto graphics.
+        self.make_goto_graphics()
+
     def repeat_last_valid_input(self):
         """
         Repeats the last valid input.
@@ -107,27 +124,67 @@ class GameView(View):
             Action: The Action to pass to the controller.
         """
         return self.parse(self.controller.get_last_inp())
-    
+
+    def quit(self):
+        """
+        Quits the game or hides the goto menu.
+        """
+        if self.show_goto:
+            self.hide_goto_graphics()
+        else:
+            # Draw decorative text.
+            decorative_text = self.graphics.center_just(9, "             ")
+            self.graphics.draw(*decorative_text)
+            decorative_text = self.graphics.center_just(11, "             ")
+            self.graphics.draw(*decorative_text)
+            saving_text = self.graphics.center_just(10, "  Saving...  ")
+            self.graphics.draw(*saving_text)
+            self.graphics.refresh()
+
+            # Save the game.
+            self.controller.save_minefield()
+
+            # Go back to the main menu.
+            return Action("goto main menu view", [])
+
     def move(self, direction, amount=1):
         """
-        Moves hover_x and hover_y in the given direction.
+        Moves hover_x and hover_y in the given direction. If goto window is
+        visible, instead change NumberField focus.
 
         Args:
             direction (Direction): The direction to move.
         """
-        if direction == Direction.U:
-            self.hover_y = max(0, self.hover_y - amount)
-        elif direction == Direction.L:
-            self.hover_x = max(0, self.hover_x - amount)
-        elif direction == Direction.D:
-            self.hover_y = min(self.difficulty.h - 1, self.hover_y + amount)
-        elif direction == Direction.R:
-            self.hover_x = min(self.difficulty.l - 1, self.hover_x + amount)
+        if self.show_goto:
+            if self.focused_ui is self.goto_number_fields["pos_x"]:
+                self.set_focused_ui(self.goto_number_fields["pos_y"])
+                self.goto_number_fields["pos_x"].set_hovered(False)
+                self.goto_number_fields["pos_y"].set_hovered(True)
+            else:
+                self.set_focused_ui(self.goto_number_fields["pos_x"])
+                self.goto_number_fields["pos_x"].set_hovered(True)
+                self.goto_number_fields["pos_y"].set_hovered(False)
+        else:
+            if direction == Direction.U:
+                self.hover_y = max(0, self.hover_y - amount)
+                self.controller.set_last_inp("w")
+            elif direction == Direction.L:
+                self.hover_x = max(0, self.hover_x - amount)
+                self.controller.set_last_inp("a")
+            elif direction == Direction.D:
+                self.hover_y = min(self.difficulty.h - 1, self.hover_y + amount)
+                self.controller.set_last_inp("s")
+            elif direction == Direction.R:
+                self.hover_x = min(self.difficulty.l - 1, self.hover_x + amount)
+                self.controller.set_last_inp("d")
 
-        # Update minefield graphics.
-        self.center_camera()
-        self.update_minefield_graphics()
-        self.update_stats_graphics()
+            # Update minefield graphics.
+            self.controller.set_hover_x(self.hover_x)
+            self.controller.set_hover_y(self.hover_y)
+            self.center_camera()
+            self.update_minefield_graphics()
+            self.update_stats_graphics()
+            self.hide_help()
 
     def center_camera(self):
         """
@@ -158,15 +215,22 @@ class GameView(View):
         """
         if direction == Direction.U:
             self.window_y = max(0, self.window_y - amount)
+            self.controller.set_last_inp("i")
         elif direction == Direction.L:
             self.window_x = max(0, self.window_x - amount)
+            self.controller.set_last_inp("j")
         elif direction == Direction.D:
-            self.window_y = min(self.difficulty.h - (self.graphics.HEIGHT - 2), self.window_y + amount)
+            self.window_y = min(self.difficulty.h - (self.graphics.HEIGHT - 2),
+                                self.window_y + amount)
+            self.controller.set_last_inp("k")
         elif direction == Direction.R:
-            self.window_x = min(self.difficulty.l - self.graphics.LENGTH, self.window_x + amount)
+            self.window_x = min(self.difficulty.l - self.graphics.LENGTH,
+                                self.window_x + amount)
+            self.controller.set_last_inp("l")
 
         # Update minefield graphics.
         self.update_minefield_graphics()
+        self.hide_help()
 
     def make_background_graphics(self):
         """
@@ -217,6 +281,14 @@ class GameView(View):
             for help_text in self.help_text_list:
                 help_text.set_enabled(False)
 
+    def hide_help(self):
+        """
+        Hides the help text.
+        """
+        self.show_help = False
+        for help_text in self.help_text_list:
+            help_text.set_enabled(False)
+
     def make_minefield_graphics(self):
         """
         Makes the minefield graphics.
@@ -231,6 +303,13 @@ class GameView(View):
         )
 
         self.minefield_ui = Minefield(centered, self.minefield)
+        self.minefield_ui.set_hover_x(self.hover_x)
+        self.minefield_ui.set_hover_y(self.hover_y)
+        self.minefield_ui.set_window_x(self.window_x)
+        self.minefield_ui.set_window_y(self.window_y)
+        self.center_camera()
+        self.update_minefield_graphics()
+
         self.uielements.append(self.minefield_ui)
 
     def update_minefield_graphics(self):
@@ -308,3 +387,97 @@ class GameView(View):
         view_x_label = self.stats_graphics["pos_x_label"]
         view_x_label.set_location(Point(pos_x, pos_y))
         view_x_label.set_text("x")
+
+    def make_goto_graphics(self):
+        """
+        Makes the goto graphics.
+        """
+        # Color options.
+        hovered_color = self.graphics.HIGHLIGHT
+
+        # Background.
+        background_text = [
+            "----------------",
+            "      Goto      ",
+            "                ",
+            "     x          ",
+            "     y          ",
+            "----------------"
+        ]
+
+        # UIElements for background graphics.
+        start_x = (self.graphics.LENGTH - len(background_text[0]))//2
+        start_y = 5
+        for index in range(len(background_text)):
+            background_graphic = TextBox(Point(start_x, start_y + index),
+                                         background_text[index])
+            background_graphic.set_enabled(False)
+            self.uielements.append(background_graphic)
+            self.goto_graphics.append(background_graphic)
+
+        # NumberFields.
+        field_pos_x = NumberField(Point(start_x + 7, 8),
+                                  0, self.difficulty.l - 1)
+        field_pos_x.set_minimum(0)
+        field_pos_x.set_hovered_color(hovered_color)
+        field_pos_x.set_enabled(False)
+        self.uielements.append(field_pos_x)
+        self.goto_number_fields["pos_x"] = field_pos_x
+
+        field_pos_y = NumberField(Point(start_x + 7, 9),
+                                  0, self.difficulty.h - 1)
+        field_pos_y.set_minimum(0)
+        field_pos_y.set_hovered_color(hovered_color)
+        field_pos_y.set_enabled(False)
+        self.uielements.append(field_pos_y)
+        self.goto_number_fields["pos_y"] = field_pos_y
+
+    def show_goto_graphics(self):
+        """
+        Shows the goto graphics.
+        """
+        self.show_goto = True
+        for background in self.goto_graphics:
+            background.set_enabled(True)
+        for field in self.goto_number_fields.values():
+            field.set_enabled(True)
+
+        # Update initial values.
+        self.goto_number_fields["pos_x"].set_value(self.hover_x)
+        self.goto_number_fields["pos_y"].set_value(self.hover_y)
+
+        self.set_focused_ui(self.goto_number_fields["pos_x"])
+        self.goto_number_fields["pos_x"].set_hovered(True)
+
+    def hide_goto_graphics(self):
+        """
+        Hides the goto graphics.
+        """
+        self.show_goto = False
+        for background in self.goto_graphics:
+            background.set_enabled(False)
+        for field in self.goto_number_fields.values():
+            field.set_enabled(False)
+            field.set_hovered(False)
+
+        self.set_focused_ui(None)
+
+    def toggle_goto_graphics(self):
+        """
+        Toggles the goto graphics.
+        """
+        if self.show_goto:
+            goto_x = self.goto_number_fields["pos_x"].value
+            goto_y = self.goto_number_fields["pos_y"].value
+            self.hover_x = goto_x
+            self.hover_y = goto_y
+
+            self.controller.set_hover_x(self.hover_x)
+            self.controller.set_hover_y(self.hover_y)
+            self.center_camera()
+            self.update_minefield_graphics()
+            self.update_stats_graphics()
+            self.hide_help()
+            self.hide_goto_graphics()
+        else:
+            self.show_goto_graphics()

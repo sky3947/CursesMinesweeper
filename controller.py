@@ -55,6 +55,12 @@ class Controller:
         """
         self.model.load_minefield()
 
+    def save_minefield(self):
+        """
+        Tells the model to save the minefield to a save file.
+        """
+        self.model.save_minefield()
+
     def calculate_mines(self, option):
         """
         Tells the model to calculate the number of mines in a minefield.

@@ -819,6 +819,10 @@ class NumberField(FocusableUIElement):
 
         return tuples
 
+# 
+# Minesweeper-specific UIElements
+# 
+
 class Minefield(UIElement):
     """
     A Minefield UIElement.
@@ -854,6 +858,42 @@ class Minefield(UIElement):
 
         # Whether or not the player lost.
         self.lost = False
+
+    def set_hover_x(self, pos):
+        """
+        Tells the model to set the hover_x value of the camera.
+
+        Args:
+            pos (int): The hover_x position.
+        """
+        self.hover_x = pos
+
+    def set_hover_y(self, pos):
+        """
+        Tells the model to set the hover_y value of the camera.
+
+        Args:
+            pos (int): The hover_y position.
+        """
+        self.hover_y = pos
+
+    def set_window_x(self, pos):
+        """
+        Tells the model to set the window_x value of the camera.
+
+        Args:
+            pos (int): The window_x position.
+        """
+        self.window_x = pos
+
+    def set_window_y(self, pos):
+        """
+        Tells the model to set the window_y value of the camera.
+
+        Args:
+            pos (int): The window_y position.
+        """
+        self.window_y = pos
 
     def to_tuples(self):
         tuples = []

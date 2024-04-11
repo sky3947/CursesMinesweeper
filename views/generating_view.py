@@ -37,7 +37,8 @@ class GeneratingView(View):
                 self.view.graphics.refresh()
                 time.sleep(0.05)
             
-            saving_text_params = self.view.graphics.center_just(18, "Saving...")
+            saving_text_params = self.view.graphics.center_just(18,
+                                                                "Saving...")
             self.view.graphics.draw(*saving_text_params)
             self.view.graphics.refresh()
 
