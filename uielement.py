@@ -954,20 +954,31 @@ class Minefield(UIElement):
                 tuples.append((t_point, "/", self.graphics.DIM_CARD))
 
         # Draw cursor clue if needed.
-        if self.window_x > self.hover_x:
+        if (self.window_x > self.hover_x
+            or (self.window_x > 0
+                and self.window_x >= self.hover_x)):
             ind_y = min(Graphics.HEIGHT - 3,
                         max(0, self.hover_y - self.window_y))
             tuples.append((Point(0, ind_y), "O", self.graphics.INDICATOR))
-        elif self.window_x + Graphics.LENGTH <= self.hover_x:
+
+        elif (self.window_x + Graphics.LENGTH <= self.hover_x
+              or (self.window_x + Graphics.LENGTH < length
+                  and self.window_x + Graphics.LENGTH - 1 <= self.hover_x)):
             ind_y = min(Graphics.HEIGHT - 3,
                         max(0, self.hover_y - self.window_y))
             tuples.append((Point(Graphics.LENGTH - 1, ind_y), "O",
                            self.graphics.INDICATOR))
-        elif self.window_y > self.hover_y:
+
+        elif (self.window_y > self.hover_y
+              or (self.window_y > 0
+                  and self.window_y >= self.hover_y)):
             ind_x = min(Graphics.LENGTH - 1,
                         max(0, self.hover_x - self.window_x))
             tuples.append((Point(ind_x, 0), "O", self.graphics.INDICATOR))
-        elif self.window_y + (Graphics.HEIGHT - 2) <= self.hover_y:
+
+        elif (self.window_y + (Graphics.HEIGHT - 2) <= self.hover_y
+              or (self.window_y + (Graphics.HEIGHT - 2) < height
+                  and self.window_y + (Graphics.HEIGHT - 3) <= self.hover_y)):
             ind_x = min(Graphics.LENGTH - 1,
                         max(0, self.hover_x - self.window_x))
             tuples.append((Point(ind_x, Graphics.HEIGHT - 3), "O",
