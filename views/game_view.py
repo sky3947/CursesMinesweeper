@@ -4,7 +4,7 @@ user and lets them interact with it.
 """
 
 from uielement import LongTextBox, Minefield, TextBox
-from utility import Action, Point
+from utility import Action, Direction, Point
 from views.view import View
 
 
@@ -27,6 +27,12 @@ class GameView(View):
         # Initialize selected y-position.
         self.hover_y = controller.get_hover_y()
 
+        # The x-position of the window to start drawing the field.
+        self.window_x = self.hover_x
+
+        # The y-position of the window to start drawing the field.
+        self.window_y = self.hover_y
+
         # Get the minefield.
         self.minefield = controller.get_minefield()
 
@@ -45,6 +51,27 @@ class GameView(View):
             # Pressing "q" will go back to the main menu.
             "q": lambda: Action("goto main menu view", []),
             "?": self.toggle_help,
+
+            # Gameplay controls.
+            "w": lambda: self.move(Direction.U),
+            "a": lambda: self.move(Direction.L),
+            "s": lambda: self.move(Direction.D),
+            "d": lambda: self.move(Direction.R),
+
+            "W": lambda: self.move(Direction.U, 10),
+            "A": lambda: self.move(Direction.L, 10),
+            "S": lambda: self.move(Direction.D, 10),
+            "D": lambda: self.move(Direction.R, 10),
+
+            "i": lambda: self.move_camera(Direction.U),
+            "j": lambda: self.move_camera(Direction.L),
+            "k": lambda: self.move_camera(Direction.D),
+            "l": lambda: self.move_camera(Direction.R),
+
+            "I": lambda: self.move_camera(Direction.U, 10),
+            "J": lambda: self.move_camera(Direction.L, 10),
+            "K": lambda: self.move_camera(Direction.D, 10),
+            "L": lambda: self.move_camera(Direction.R, 10),
 
             # Repeat the last valid input.
             enter: self.repeat_last_valid_input
@@ -81,6 +108,66 @@ class GameView(View):
         """
         return self.parse(self.controller.get_last_inp())
     
+    def move(self, direction, amount=1):
+        """
+        Moves hover_x and hover_y in the given direction.
+
+        Args:
+            direction (Direction): The direction to move.
+        """
+        if direction == Direction.U:
+            self.hover_y = max(0, self.hover_y - amount)
+        elif direction == Direction.L:
+            self.hover_x = max(0, self.hover_x - amount)
+        elif direction == Direction.D:
+            self.hover_y = min(self.difficulty.h - 1, self.hover_y + amount)
+        elif direction == Direction.R:
+            self.hover_x = min(self.difficulty.l - 1, self.hover_x + amount)
+
+        # Update minefield graphics.
+        self.center_camera()
+        self.update_minefield_graphics()
+        self.update_stats_graphics()
+
+    def center_camera(self):
+        """
+        Centers the camera based on hover_x and hover_y.
+        """
+        if self.hover_x < self.window_x + 10:
+            self.window_x = max(0, self.hover_x - 10)
+        elif self.hover_x > self.window_x + (self.graphics.LENGTH - 1) - 10:
+            self.window_x = min(
+                self.difficulty.l - self.graphics.LENGTH,
+                self.hover_x + 10 - self.graphics.LENGTH + 1
+            )
+
+        if self.hover_y < self.window_y + 5:
+            self.window_y = max(0, self.hover_y - 5)
+        elif self.hover_y > self.window_y + (self.graphics.HEIGHT - 3) - 5:
+            self.window_y = min(
+                self.difficulty.h - (self.graphics.HEIGHT - 2),
+                self.hover_y + 5 - (self.graphics.HEIGHT - 2) + 1
+            )
+
+    def move_camera(self, direction, amount=1):
+        """
+        Moves the window_x and window_y in the given direction.
+
+        Args:
+            direction (Direction): The direction to move.
+        """
+        if direction == Direction.U:
+            self.window_y = max(0, self.window_y - amount)
+        elif direction == Direction.L:
+            self.window_x = max(0, self.window_x - amount)
+        elif direction == Direction.D:
+            self.window_y = min(self.difficulty.h - (self.graphics.HEIGHT - 2), self.window_y + amount)
+        elif direction == Direction.R:
+            self.window_x = min(self.difficulty.l - self.graphics.LENGTH, self.window_x + amount)
+
+        # Update minefield graphics.
+        self.update_minefield_graphics()
+
     def make_background_graphics(self):
         """
         Makes the background graphics.
@@ -145,6 +232,15 @@ class GameView(View):
 
         self.minefield_ui = Minefield(centered, self.minefield)
         self.uielements.append(self.minefield_ui)
+
+    def update_minefield_graphics(self):
+        """
+        Updates the minefield graphics.
+        """
+        self.minefield_ui.hover_x = self.hover_x
+        self.minefield_ui.hover_y = self.hover_y
+        self.minefield_ui.window_x = self.window_x
+        self.minefield_ui.window_y = self.window_y
 
     def make_stats_graphics(self):
         """

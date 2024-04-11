@@ -958,7 +958,7 @@ class Minefield(UIElement):
             ind_y = min(Graphics.HEIGHT - 3,
                         max(0, self.hover_y - self.window_y))
             tuples.append((Point(0, ind_y), "O", self.graphics.INDICATOR))
-        elif self.window_x + Graphics.LENGTH < self.hover_x:
+        elif self.window_x + Graphics.LENGTH <= self.hover_x:
             ind_y = min(Graphics.HEIGHT - 3,
                         max(0, self.hover_y - self.window_y))
             tuples.append((Point(Graphics.LENGTH - 1, ind_y), "O",
@@ -967,7 +967,7 @@ class Minefield(UIElement):
             ind_x = min(Graphics.LENGTH - 1,
                         max(0, self.hover_x - self.window_x))
             tuples.append((Point(ind_x, 0), "O", self.graphics.INDICATOR))
-        elif self.window_y + (Graphics.HEIGHT - 2) < self.hover_y:
+        elif self.window_y + (Graphics.HEIGHT - 2) <= self.hover_y:
             ind_x = min(Graphics.LENGTH - 1,
                         max(0, self.hover_x - self.window_x))
             tuples.append((Point(ind_x, Graphics.HEIGHT - 3), "O",
