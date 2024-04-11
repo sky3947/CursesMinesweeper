@@ -22,13 +22,19 @@ class GameView(View):
         self.first_inp = "q"
 
         # Initialize selected x-position.
-        self.x = controller.get_hover_x()
+        self.hover_x = controller.get_hover_x()
 
         # Initialize selected y-position.
-        self.y = controller.get_hover_y()
+        self.hover_y = controller.get_hover_y()
 
         # Get the minefield.
         self.minefield = controller.get_minefield()
+
+        # Get the difficulty.
+        self.difficulty = controller.get_difficulty()
+
+        # Get the number of mines.
+        self.num_mines = controller.get_num_mines()
 
         # Show the help text.
         self.show_help = False
@@ -44,6 +50,16 @@ class GameView(View):
             enter: self.repeat_last_valid_input
         }
 
+        # UIElements for stats graphics.
+        self.stats_graphics = {
+            "pos_x_label": None,
+            "pos_x": None,
+            "pos_y_label": None,
+            "pos_y": None,
+            "mine_counter_label": None,
+            "mine_counter": None
+        }
+
         # Make background graphics.
         self.make_background_graphics()
 
@@ -52,7 +68,10 @@ class GameView(View):
 
         # Make help text.
         self.make_help()
-    
+
+        # Make stats graphics.
+        self.make_stats_graphics()
+
     def repeat_last_valid_input(self):
         """
         Repeats the last valid input.
@@ -80,9 +99,9 @@ class GameView(View):
         """
         # Help text.
         text = [
-            " g: Goto cell | G: Goto random cell"
+            " g: Goto cell | G: Goto random cell | ijkl/IJKL: Move cam"
                 .ljust(self.graphics.LENGTH, " "),
-            " WASD: Skip | m: Open cell | n: Flag cell | q: Quit"
+            " WASD: Move x10 | m: Open cell | n: Flag cell | q: Quit"
                 .ljust(self.graphics.LENGTH, "_")
         ]
         first_line, second_line = text
@@ -115,5 +134,81 @@ class GameView(View):
         """
         Makes the minefield graphics.
         """
-        self.minefield_ui = Minefield(Point(0, 0), self.minefield)
+        height = self.difficulty.h
+        length = self.difficulty.l
+        centered_x = (self.graphics.LENGTH - length)//2
+        centered_y = ((self.graphics.HEIGHT - 2) - height)//2
+        centered = Point(
+            0 if length > self.graphics.LENGTH else centered_x,
+            0 if height > (self.graphics.HEIGHT - 2) else centered_y
+        )
+
+        self.minefield_ui = Minefield(centered, self.minefield)
         self.uielements.append(self.minefield_ui)
+
+    def make_stats_graphics(self):
+        """
+        Makes the stats graphics.
+        """
+        self.stats_graphics["pos_x_label"] = TextBox()
+        self.stats_graphics["pos_x_label"].set_color(self.graphics.DIM)
+
+        self.stats_graphics["pos_x"] = TextBox()
+
+        self.stats_graphics["pos_y_label"] = TextBox()
+        self.stats_graphics["pos_y_label"].set_color(self.graphics.DIM)
+
+        self.stats_graphics["pos_y"] = TextBox()
+
+        self.stats_graphics["mine_counter_label"] = TextBox()
+        self.stats_graphics["mine_counter_label"].set_color(self.graphics.DIM)
+
+        self.stats_graphics["mine_counter"] = TextBox()
+
+        self.update_stats_graphics()
+
+        for element in self.stats_graphics.values():
+            self.uielements.append(element)
+
+    def update_stats_graphics(self):
+        """
+        Updates the stats graphics.
+        """
+        mines_left = str(self.num_mines - self.controller.get_num_flagged())
+        pos_x = self.graphics.LENGTH - 1 - len(mines_left)
+        pos_y = self.graphics.HEIGHT - 2
+
+        mine_counter = self.stats_graphics["mine_counter"]
+        mine_counter.set_location(Point(pos_x, pos_y))
+        mine_counter.set_text(mines_left)
+        pos_x -= 1
+
+        mine_label = self.stats_graphics["mine_counter_label"]
+        mine_label.set_location(Point(pos_x, pos_y))
+        mine_label.set_text("*")
+        pos_x -= 1
+
+        view_y_text = str(self.hover_y)
+        pos_x -= len(view_y_text)
+
+        view_y = self.stats_graphics["pos_y"]
+        view_y.set_location(Point(pos_x, pos_y))
+        view_y.set_text(view_y_text)
+        pos_x -= 1
+
+        view_y_label = self.stats_graphics["pos_y_label"]
+        view_y_label.set_location(Point(pos_x, pos_y))
+        view_y_label.set_text("y")
+        pos_x -= 1
+
+        view_x_text = str(self.hover_x)
+        pos_x -= len(view_x_text)
+
+        view_x = self.stats_graphics["pos_x"]
+        view_x.set_location(Point(pos_x, pos_y))
+        view_x.set_text(view_x_text)
+        pos_x -= 1
+
+        view_x_label = self.stats_graphics["pos_x_label"]
+        view_x_label.set_location(Point(pos_x, pos_y))
+        view_x_label.set_text("x")

@@ -4,7 +4,7 @@ This class is the controller for the Minesweeper program.
 
 from graphics import Graphics
 from utility import Flow
-from main_menu_view import MainMenuView
+from views.main_menu_view import MainMenuView
 from views.new_game_view import NewGameView
 from views.generating_view import GeneratingView
 from views.continue_game_view import ContinueGameView
@@ -239,6 +239,15 @@ class Controller:
             int: The number of flagged cells.
         """
         return self.model.get_num_flagged()
+
+    def set_num_flagged(self, num):
+        """
+        Tells the model to set the number of flagged cells.
+
+        Args:
+            num (int): The number of flagged cells.
+        """
+        self.model.set_num_flagged(num)
 
     def get_num_mines(self):
         """

@@ -202,7 +202,7 @@ class TextBox(UIElement):
     """
     A TextBox is a UIElement used to display text.
     """
-    def __init__(self, point, text="TextBox"):
+    def __init__(self, point=Point(0, 0), text="TextBox"):
         """
         Constructs a TextBox and returns it.
 
@@ -871,26 +871,31 @@ class Minefield(UIElement):
         # Draw the minefield.
         for y in range(lower_y, upper_y):
             for x in range(lower_x, upper_x):
+                # Screen calculations.
                 is_hovered = x == self.hover_x and y == self.hover_y
                 cell = self.minefield[y][x]
                 screen_x = x - lower_x + self.point.x
                 screen_y = y - lower_y + self.point.y
                 t_point = Point(screen_x, screen_y)
 
+                # Character and color calculations.
+                mine_key = Graphics.MINE_KEY
+                cell_key = Graphics.CELL_KEY
+                mine_color = (self.graphics.HIGHLIGHT_MINE
+                                if is_hovered
+                                else self.graphics.MINE)
+                cell_color = (self.graphics.HIGHLIGHT_DIM_CARD
+                                if is_hovered
+                                else self.graphics.CARD)
+                dim_cell_color = (self.graphics.HIGHLIGHT_DIM_CARD
+                                  if is_hovered
+                                  else self.graphics.DIM_CARD)
+
                 if cell.is_opened():
                     if cell.is_mine():
-                        mine = Graphics.MINE_KEY
-                        cell = Graphics.CELL_KEY
-                        mine_color = (self.graphics.HIGHLIGHT_MINE if
-                                      is_hovered else
-                                      self.graphics.MINE)
-                        cell_color = (self.graphics.HIGHLIGHT_DIM_CARD if
-                                      is_hovered else
-                                      self.graphics.CARD)
-
                         tuples.append((
                             t_point,
-                            mine if self.lost else cell,
+                            mine_key if self.lost else cell_key,
                             mine_color if self.lost else cell_color
                         ))
                         continue
@@ -910,31 +915,62 @@ class Minefield(UIElement):
                         ))
                 else:
                     if cell.is_mine():
-                        mine = Graphics.MINE_KEY
-                        cell = Graphics.CELL_KEY
-                        mine_color = self.graphics.MINE
-                        dim_cell_color = self.graphics.DIM_CARD
-
                         tuples.append((
                             t_point,
-                            mine if self.lost else cell,
+                            mine_key if self.lost else cell_key,
                             mine_color if self.lost else dim_cell_color
                         ))
                     elif cell.is_flagged():
-                        dim_cell_color = self.graphics.DIM_CARD
-
                         tuples.append((
                             t_point,
-                            Graphics.MINE_KEY,
+                            mine_key,
                             dim_cell_color
                         ))
                     else:
-                        dim_cell_color = self.graphics.DIM_CARD
-
                         tuples.append((
                             t_point,
-                            Graphics.CELL_KEY,
+                            cell_key,
                             dim_cell_color
                         ))
+
+        # Draw the boundry indicators.
+        if self.window_x > 0:
+            for y in range(lower_y, upper_y):
+                t_point = Point(self.point.x, y - lower_y + self.point.y)
+                tuples.append((t_point, "/", self.graphics.DIM_CARD))
+        if self.window_x + Graphics.LENGTH < length:
+            for y in range(lower_y, upper_y):
+                t_point = Point(Graphics.LENGTH - 1,
+                                y - lower_y + self.point.y)
+                tuples.append((t_point, "/", self.graphics.DIM_CARD))
+        if self.window_y > 0:
+            for x in range(lower_x, upper_x):
+                t_point = Point(x - lower_x + self.point.x, self.point.y)
+                tuples.append((t_point, "/", self.graphics.DIM_CARD))
+        if self.window_y + (Graphics.HEIGHT - 2) < height:
+            for x in range(lower_x, upper_x):
+                t_point = Point(x - lower_x + self.point.x,
+                                (Graphics.HEIGHT - 3))
+                tuples.append((t_point, "/", self.graphics.DIM_CARD))
+
+        # Draw cursor clue if needed.
+        if self.window_x > self.hover_x:
+            ind_y = min(Graphics.HEIGHT - 3,
+                        max(0, self.hover_y - self.window_y))
+            tuples.append((Point(0, ind_y), "O", self.graphics.INDICATOR))
+        elif self.window_x + Graphics.LENGTH < self.hover_x:
+            ind_y = min(Graphics.HEIGHT - 3,
+                        max(0, self.hover_y - self.window_y))
+            tuples.append((Point(Graphics.LENGTH - 1, ind_y), "O",
+                           self.graphics.INDICATOR))
+        elif self.window_y > self.hover_y:
+            ind_x = min(Graphics.LENGTH - 1,
+                        max(0, self.hover_x - self.window_x))
+            tuples.append((Point(ind_x, 0), "O", self.graphics.INDICATOR))
+        elif self.window_y + (Graphics.HEIGHT - 2) < self.hover_y:
+            ind_x = min(Graphics.LENGTH - 1,
+                        max(0, self.hover_x - self.window_x))
+            tuples.append((Point(ind_x, Graphics.HEIGHT - 3), "O",
+                           self.graphics.INDICATOR))
 
         return tuples

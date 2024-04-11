@@ -40,7 +40,7 @@ class Model:
         self.options = {
             "easy": Option(10, 10, 10),
             "medium": Option(30, 20, 15),
-            "hard": Option(60, 30, 20),
+            "hard": Option(60, 28, 20),
             "custom": Option(10, 10, 10),
             "custom_minimums": Option(2, 2, 1),
             "custom_maximums": Option(1024, 1024, 99)
@@ -174,8 +174,8 @@ class Model:
 
         LENGTH: One less than the length of the minefield.
         HEIGHT: One less than the height of the minefield.
-        HOVERX: One less than the x-position of the hovered cell.
-        HOVERY: One less than the y-position of the hovered cell.
+        HOVERX: The x-position of the hovered cell.
+        HOVERY: The y-position of the hovered cell.
         DATA: Sets of flags representing a cell. Each cell,
             C_n(O, M, F), where C_n is the nth cell (starting at n=0),
             is reconstructed into minefield position x=i%(LENGTH+1),
@@ -194,8 +194,8 @@ class Model:
         # Make header (length and height)
         piece_a = ((length-1)&0x3FF)<<30
         piece_b = ((height-1)&0x3FF)<<20
-        piece_c = ((hover_x-1)&0x3FF)<<10
-        piece_d = (hover_y-1)&0x3FF
+        piece_c = ((hover_x)&0x3FF)<<10
+        piece_d = (hover_y)&0x3FF
         combined = piece_a|piece_b|piece_c|piece_d
         bin_header = combined.to_bytes(5, "big")
 
@@ -242,8 +242,8 @@ class Model:
         with open(self.SAVE_FILE, "rb") as save:
             # Extract the header.
             header = int.from_bytes(save.read(5), "big")
-            hover_y = (header&0x3FF)+1
-            hover_x = ((header>>10)&0x3FF)+1
+            hover_y = header&0x3FF
+            hover_x = (header>>10)&0x3FF
             height = ((header>>20)&0x3FF)+1
             length = ((header>>30)&0x3FF)+1
 
@@ -355,6 +355,8 @@ class Model:
         self.mk_mt_minefield(length, height)
         self.num_mines = mines
         self.num_flagged = 0
+        self.hover_x = 0
+        self.hover_y = 0
 
         # Done when mines_left == 0.
         mines_left = mines
@@ -433,6 +435,15 @@ class Model:
             int: The number of flagged cells.
         """
         return self.num_flagged
+
+    def set_num_flagged(self, num):
+        """
+        Sets the number of flagged cells.
+
+        Args:
+            num (int): The number of flagged cells.
+        """
+        self.num_flagged = num  
 
     def get_num_mines(self):
         """
