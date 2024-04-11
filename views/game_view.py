@@ -3,6 +3,7 @@ The game View is the main View for the game. It displays the minefield to the
 user and lets them interact with it.
 """
 
+import random
 from uielement import LongTextBox, Minefield, NumberField, TextBox
 from utility import Action, Direction, Point
 from views.view import View
@@ -231,6 +232,7 @@ class GameView(View):
         # Update minefield graphics.
         self.update_minefield_graphics()
         self.hide_help()
+        self.hide_goto_graphics()
 
     def make_background_graphics(self):
         """
@@ -481,3 +483,21 @@ class GameView(View):
             self.hide_goto_graphics()
         else:
             self.show_goto_graphics()
+
+    def goto_random(self):
+        """
+        Goto to a random unopened cell.
+        """
+        pos_x = random.randint(0, self.difficulty.l - 1)
+        pos_y = random.randint(0, self.difficulty.h - 1)
+        tries = 25
+
+        self.hover_x = random.randint(0, self.difficulty.l - 1)
+        self.hover_y = random.randint(0, self.difficulty.h - 1)
+        self.controller.set_hover_x(self.hover_x)
+        self.controller.set_hover_y(self.hover_y)
+        self.center_camera()
+        self.update_minefield_graphics()
+        self.update_stats_graphics()
+        self.hide_help()
+        self.hide_goto_graphics()
