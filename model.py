@@ -443,7 +443,7 @@ class Model:
         Args:
             num (int): The number of flagged cells.
         """
-        self.num_flagged = num  
+        self.num_flagged = num
 
     def get_num_mines(self):
         """

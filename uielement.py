@@ -895,6 +895,15 @@ class Minefield(UIElement):
         """
         self.window_y = pos
 
+    def set_lost(self, lost):
+        """
+        Tells the Minefield to set the lost flag. If true, the player has lost.
+
+        Args:
+            lost (bool): The new lost flag.
+        """
+        self.lost = lost
+
     def to_tuples(self):
         tuples = []
 

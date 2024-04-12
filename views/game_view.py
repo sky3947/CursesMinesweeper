@@ -588,11 +588,9 @@ class GameView(View):
         if cell.is_flagged():
             self.num_flagged -= 1
             cell.set_flagged(False)
-            self.num_correct_flags = self.controller.get_num_correct_flagged()
         else:
             self.num_flagged += 1
             cell.set_flagged(True)
-            self.num_correct_flags = self.controller.get_num_correct_flagged()
 
         self.update_stats_graphics()
 
@@ -609,20 +607,49 @@ class GameView(View):
         if self.minefield[self.hover_y][self.hover_x].is_opened():
             return
 
-        self.minefield[self.hover_y][self.hover_x].open()
+        # Open the cell.
+        cell_mound = []
+        mound_position = 0
+        cell_mound.append(Point(self.hover_x, self.hover_y))
 
-        if self.minefield[self.hover_y][self.hover_x].is_mine():
-            self.state = State.LOST
-            self.lose_graphic.set_enabled(True)
-            self.controller.delete_saved_game()
-        
+        while mound_position < len(cell_mound):
+            point = cell_mound[mound_position]
+
+            if not self.minefield[point.y][point.x].is_opened():
+                self.minefield[point.y][point.x].open()
+
+                # Check for loss condition.
+                if self.minefield[point.y][point.x].is_mine():
+                    self.state = State.LOST
+                    self.minefield_ui.set_lost(True)
+                    self.lose_graphic.set_enabled(True)
+                    self.controller.delete_saved_game()
+                    return
+
+                # Add neighbors to the mound if there are no mines around.
+                if self.minefield[point.y][point.x].get_number() == 0:
+                    xbound = (max(0, point.x - 1),
+                              min(self.difficulty.l - 1, point.x + 1) + 1)
+                    ybound = (max(0, point.y - 1),
+                              min(self.difficulty.h - 1, point.y + 1) + 1)
+                    for x_near in range(*xbound):
+                        for y_near in range(*ybound):
+                            cell = self.minefield[y_near][x_near]
+                            if (not cell.is_opened()
+                                and not cell.is_flagged()):
+                                cell_mound.append(Point(x_near, y_near))
+
+            mound_position += 1
+
         # Check for win condition.
         won = True
         for row in self.minefield:
-            for cell in row:
-                if not cell.is_opened() and not cell.is_mine():
+            for point in row:
+                if not point.is_opened() and not point.is_mine():
                     won = False
                     break
+            if not won:
+                break
 
         if won:
             self.state = State.WON
