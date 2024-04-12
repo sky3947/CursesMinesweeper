@@ -63,6 +63,7 @@ class Graphics:
         curses.init_pair(8, 240, 231)
         curses.init_pair(9, 196, 231)
         curses.init_pair(10, 226, 234)
+        curses.init_pair(11, 226, 16)
 
         # Black text color on white background.
         self.HIGHLIGHT = curses.color_pair(1)
@@ -93,6 +94,9 @@ class Graphics:
 
         # Yellow text color on a dark gray background.
         self.INDICATOR = curses.color_pair(10)
+
+        # Yellow text color on a black background.
+        self.YELLOW = curses.color_pair(11)
 
     def get_inp(self):
         """

@@ -987,9 +987,16 @@ class Minefield(UIElement):
                                 y - lower_y + self.point.y)
                 tuples.append((t_point, "/", self.graphics.DIM_CARD))
         if lower_y > 0:
-            tuples.append((Point(0, 0), "/"*Graphics.LENGTH, self.graphics.DIM_CARD))
+            tuples.append((
+                Point(0, 0),
+                "/"*Graphics.LENGTH,
+                self.graphics.DIM_CARD
+            ))
         if upper_y < height:
-            tuples.append((Point(0, Graphics.HEIGHT - 3), "/"*Graphics.LENGTH, self.graphics.DIM_CARD))
+            tuples.append((
+                Point(0, Graphics.HEIGHT - 3),
+                "/"*Graphics.LENGTH, self.graphics.DIM_CARD
+            ))
 
         # Draw cursor clue if needed.
         if (self.window_x > self.hover_x

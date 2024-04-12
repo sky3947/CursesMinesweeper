@@ -20,6 +20,12 @@ class Direction(Enum):
     D = 2
     R = 3
 
+class State(Enum):
+    """An Enum used to represent the state of the game."""
+    RUNNING = 0
+    WON = 1
+    LOST = 2
+
 # A Point consists of an x-coordinate and a y-coordinate.
 Point = namedtuple("Point", "x y")
 

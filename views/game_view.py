@@ -5,7 +5,7 @@ user and lets them interact with it.
 
 import random
 from uielement import LongTextBox, Minefield, NumberField, TextBox
-from utility import Action, Direction, Point
+from utility import Action, Direction, Point, State
 from views.view import View
 
 
@@ -51,6 +51,9 @@ class GameView(View):
 
         # Show the goto cell ui.
         self.show_goto = False
+
+        # The state of the game.
+        self.state = State.RUNNING
 
         # Map of input to functions.
         enter = self.graphics.ENTER_KEY
@@ -126,6 +129,15 @@ class GameView(View):
         # Make goto graphics.
         self.make_goto_graphics()
 
+        # The UIElement for winning.
+        self.win_graphic = None
+
+        # The UIElement for losing.
+        self.lose_graphic = None
+
+        # Make the win and lose graphics.
+        self.make_endgame_graphics()
+
     def repeat_last_valid_input(self):
         """
         Repeats the last valid input.
@@ -152,7 +164,8 @@ class GameView(View):
             self.graphics.refresh()
 
             # Save the game.
-            self.controller.save_minefield()
+            if self.state == State.RUNNING:
+                self.controller.save_minefield()
 
             # Go back to the main menu.
             return Action("goto main menu view", [])
@@ -356,9 +369,11 @@ class GameView(View):
         """
         Updates the stats graphics.
         """
-        mines_left = str(self.num_mines - self.num_flagged)
-        pos_x = self.graphics.LENGTH - 1 - len(mines_left)
+        pos_x = self.graphics.LENGTH - 1
         pos_y = self.graphics.HEIGHT - 2
+
+        mines_left = str(self.num_mines - self.num_flagged)
+        pos_x = pos_x - len(mines_left)
 
         mine_counter = self.stats_graphics["mine_counter"]
         mine_counter.set_location(Point(pos_x, pos_y))
@@ -489,6 +504,29 @@ class GameView(View):
         else:
             self.show_goto_graphics()
 
+    def make_endgame_graphics(self):
+        """
+        Makes the endgame graphics.
+        """
+        win_text = "You won!"
+        lose_text = "You lost."
+
+        pos_x = self.graphics.LENGTH - 1
+        pos_y = self.graphics.HEIGHT - 1
+
+        win_graphic = TextBox(Point(pos_x - len(win_text), pos_y), win_text)
+        win_graphic.set_color(self.graphics.YELLOW)
+        win_graphic.set_enabled(False)
+        self.uielements.append(win_graphic)
+
+        lose_graphic = TextBox(Point(pos_x - len(lose_text), pos_y), lose_text)
+        lose_graphic.set_color(self.graphics.YELLOW)
+        lose_graphic.set_enabled(False)
+        self.uielements.append(lose_graphic)
+
+        self.win_graphic = win_graphic
+        self.lose_graphic = lose_graphic
+
     def goto_random_cell(self):
         """
         Goto to a random unopened cell.
@@ -539,6 +577,9 @@ class GameView(View):
         """
         Places or removes a flag at the hovered cell.
         """
+        if self.state == State.WON or self.state == State.LOST:
+            return
+
         cell = self.minefield[self.hover_y][self.hover_x]
         if cell.is_opened():
             # TODO: Implement quick flagging.
@@ -547,17 +588,21 @@ class GameView(View):
         if cell.is_flagged():
             self.num_flagged -= 1
             cell.set_flagged(False)
+            self.num_correct_flags = self.controller.get_num_correct_flagged()
         else:
             self.num_flagged += 1
             cell.set_flagged(True)
+            self.num_correct_flags = self.controller.get_num_correct_flagged()
 
-        # self.update_minefield_graphics()
         self.update_stats_graphics()
 
     def open_cell(self):
         """
         Opens the hovered cell.
         """
+        if self.state == State.WON or self.state == State.LOST:
+            return
+
         if self.minefield[self.hover_y][self.hover_x].is_flagged():
             return
 
@@ -565,3 +610,21 @@ class GameView(View):
             return
 
         self.minefield[self.hover_y][self.hover_x].open()
+
+        if self.minefield[self.hover_y][self.hover_x].is_mine():
+            self.state = State.LOST
+            self.lose_graphic.set_enabled(True)
+            self.controller.delete_saved_game()
+        
+        # Check for win condition.
+        won = True
+        for row in self.minefield:
+            for cell in row:
+                if not cell.is_opened() and not cell.is_mine():
+                    won = False
+                    break
+
+        if won:
+            self.state = State.WON
+            self.win_graphic.set_enabled(True)
+            self.controller.delete_saved_game()
