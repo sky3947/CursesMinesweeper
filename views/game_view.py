@@ -77,7 +77,8 @@ class GameView(View):
             "K": lambda: self.move_camera(Direction.D, 10),
             "L": lambda: self.move_camera(Direction.R, 10),
 
-            "g": lambda: self.toggle_goto_graphics(),
+            "g": self.toggle_goto_graphics,
+            "G": self.goto_random_cell,
 
             # Repeat the last valid input.
             enter: self.repeat_last_valid_input
@@ -484,20 +485,46 @@ class GameView(View):
         else:
             self.show_goto_graphics()
 
-    def goto_random(self):
+    def goto_random_cell(self):
         """
         Goto to a random unopened cell.
         """
         pos_x = random.randint(0, self.difficulty.l - 1)
         pos_y = random.randint(0, self.difficulty.h - 1)
-        tries = 25
+        tries = 50
 
-        self.hover_x = random.randint(0, self.difficulty.l - 1)
-        self.hover_y = random.randint(0, self.difficulty.h - 1)
+        # Try to find an unopened cell.
+        while tries > 0:
+            if not self.minefield[pos_y][pos_x].is_opened():
+                self.hover_x = pos_x
+                self.hover_y = pos_y
+                self.controller.set_hover_x(self.hover_x)
+                self.controller.set_hover_y(self.hover_y)
+                self.center_camera()
+                self.update_minefield_graphics()
+                self.update_stats_graphics()
+                self.hide_help()
+                self.hide_goto_graphics()
+                return
+
+            pos_x = random.randint(0, self.difficulty.l - 1)
+            pos_y = random.randint(0, self.difficulty.h - 1)
+            tries -= 1
+
+        # If none found yet, pick from a list of unopened cells.
+        unopened_positions = []
+        for y in range(self.difficulty.h):
+            for x in range(self.difficulty.l):
+                if not self.minefield[y][x].is_opened():
+                    unopened_positions.append((x, y))
+
+        pos_x, pos_y = random.choice(unopened_positions)
+        self.hover_x = pos_x
+        self.hover_y = pos_y
         self.controller.set_hover_x(self.hover_x)
         self.controller.set_hover_y(self.hover_y)
         self.center_camera()
         self.update_minefield_graphics()
         self.update_stats_graphics()
         self.hide_help()
-        self.hide_goto_graphics()
+
