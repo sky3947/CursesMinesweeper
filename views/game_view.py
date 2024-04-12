@@ -518,6 +518,9 @@ class GameView(View):
                 if not self.minefield[y][x].is_opened():
                     unopened_positions.append((x, y))
 
+        if len(unopened_positions) == 0:
+            return
+
         pos_x, pos_y = random.choice(unopened_positions)
         self.hover_x = pos_x
         self.hover_y = pos_y
