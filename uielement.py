@@ -861,7 +861,7 @@ class Minefield(UIElement):
 
     def set_hover_x(self, pos):
         """
-        Tells the model to set the hover_x value of the camera.
+        Tells the Minefield to set the hover_x value of the camera.
 
         Args:
             pos (int): The hover_x position.
@@ -870,7 +870,7 @@ class Minefield(UIElement):
 
     def set_hover_y(self, pos):
         """
-        Tells the model to set the hover_y value of the camera.
+        Tells the Minefield to set the hover_y value of the camera.
 
         Args:
             pos (int): The hover_y position.
@@ -879,7 +879,7 @@ class Minefield(UIElement):
 
     def set_window_x(self, pos):
         """
-        Tells the model to set the window_x value of the camera.
+        Tells the Minefield to set the window_x value of the camera.
 
         Args:
             pos (int): The window_x position.
@@ -888,7 +888,7 @@ class Minefield(UIElement):
 
     def set_window_y(self, pos):
         """
-        Tells the model to set the window_y value of the camera.
+        Tells the Minefield to set the window_y value of the camera.
 
         Args:
             pos (int): The window_y position.
@@ -935,8 +935,8 @@ class Minefield(UIElement):
                     if cell.is_mine():
                         tuples.append((
                             t_point,
-                            mine_key if self.lost else cell_key,
-                            mine_color if self.lost else cell_color
+                            mine_key,
+                            mine_color
                         ))
                         continue
 
@@ -945,13 +945,13 @@ class Minefield(UIElement):
                         tuples.append((
                             t_point,
                             str(cell_number),
-                            self.graphics.CARD
+                            dim_cell_color
                         ))
                     else:
                         tuples.append((
                             t_point,
                             " ",
-                            self.graphics.CARD
+                            cell_color
                         ))
                 else:
                     if self.lost and cell.is_mine():
@@ -977,24 +977,19 @@ class Minefield(UIElement):
                     ))
 
         # Draw the boundry indicators.
-        if self.window_x > 0:
+        if lower_x > 0:
             for y in range(lower_y, upper_y):
                 t_point = Point(self.point.x, y - lower_y + self.point.y)
                 tuples.append((t_point, "/", self.graphics.DIM_CARD))
-        if self.window_x + Graphics.LENGTH < length:
+        if upper_x < length:
             for y in range(lower_y, upper_y):
                 t_point = Point(Graphics.LENGTH - 1,
                                 y - lower_y + self.point.y)
                 tuples.append((t_point, "/", self.graphics.DIM_CARD))
-        if self.window_y > 0:
-            for x in range(lower_x, upper_x):
-                t_point = Point(x - lower_x + self.point.x, self.point.y)
-                tuples.append((t_point, "/", self.graphics.DIM_CARD))
-        if self.window_y + (Graphics.HEIGHT - 2) < height:
-            for x in range(lower_x, upper_x):
-                t_point = Point(x - lower_x + self.point.x,
-                                (Graphics.HEIGHT - 3))
-                tuples.append((t_point, "/", self.graphics.DIM_CARD))
+        if lower_y > 0:
+            tuples.append((Point(0, 0), "/"*Graphics.LENGTH, self.graphics.DIM_CARD))
+        if upper_y < height:
+            tuples.append((Point(0, Graphics.HEIGHT - 3), "/"*Graphics.LENGTH, self.graphics.DIM_CARD))
 
         # Draw cursor clue if needed.
         if (self.window_x > self.hover_x

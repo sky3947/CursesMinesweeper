@@ -282,8 +282,8 @@ class Model:
                     if mine:
                         self.num_mines += 1
 
-                    # Increment numbers around the mine.
-                    self.increment_numbers(x_pos, y_pos, 0, 0, length, height)
+                        # Increment numbers around the mine.
+                        self.increment_numbers(x_pos, y_pos, 0, 0, length, height)
 
                     current += 1
                     self.gen_progress = round((current/num_mines) * 100)

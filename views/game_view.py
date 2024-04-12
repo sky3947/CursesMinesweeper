@@ -84,6 +84,9 @@ class GameView(View):
             "G": self.goto_random_cell,
 
             "n": self.toggle_flag,
+            "m": self.open_cell,
+
+            "z": self.center_camera,
 
             # Repeat the last valid input.
             enter: self.repeat_last_valid_input
@@ -311,10 +314,6 @@ class GameView(View):
         )
 
         self.minefield_ui = Minefield(centered, self.minefield)
-        self.minefield_ui.set_hover_x(self.hover_x)
-        self.minefield_ui.set_hover_y(self.hover_y)
-        self.minefield_ui.set_window_x(self.window_x)
-        self.minefield_ui.set_window_y(self.window_y)
         self.center_camera()
         self.update_minefield_graphics()
 
@@ -324,10 +323,10 @@ class GameView(View):
         """
         Updates the minefield graphics.
         """
-        self.minefield_ui.hover_x = self.hover_x
-        self.minefield_ui.hover_y = self.hover_y
-        self.minefield_ui.window_x = self.window_x
-        self.minefield_ui.window_y = self.window_y
+        self.minefield_ui.set_hover_x(self.hover_x)
+        self.minefield_ui.set_hover_y(self.hover_y)
+        self.minefield_ui.set_window_x(self.window_x)
+        self.minefield_ui.set_window_y(self.window_y)
 
     def make_stats_graphics(self):
         """
@@ -554,3 +553,15 @@ class GameView(View):
 
         # self.update_minefield_graphics()
         self.update_stats_graphics()
+
+    def open_cell(self):
+        """
+        Opens the hovered cell.
+        """
+        if self.minefield[self.hover_y][self.hover_x].is_flagged():
+            return
+
+        if self.minefield[self.hover_y][self.hover_x].is_opened():
+            return
+
+        self.minefield[self.hover_y][self.hover_x].open()
