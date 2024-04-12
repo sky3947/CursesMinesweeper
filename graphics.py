@@ -57,13 +57,12 @@ class Graphics:
         curses.init_pair(2, 231, 16)
         curses.init_pair(3, 240, 16)
         curses.init_pair(4, 16, 16)
-        curses.init_pair(5, 1, 234)
+        curses.init_pair(5, 196, 234)
         curses.init_pair(6, 231, 234)
         curses.init_pair(7, 240, 234)
         curses.init_pair(8, 240, 231)
-        curses.init_pair(9, 1, 231)
+        curses.init_pair(9, 196, 231)
         curses.init_pair(10, 226, 234)
-        curses.init_pair(11, 1, 16)
 
         # Black text color on white background.
         self.HIGHLIGHT = curses.color_pair(1)
@@ -94,9 +93,6 @@ class Graphics:
 
         # Yellow text color on a dark gray background.
         self.INDICATOR = curses.color_pair(10)
-
-        # Red text color on black background.
-        self.DECORATIVE_MINE = curses.color_pair(11)
 
     def get_inp(self):
         """

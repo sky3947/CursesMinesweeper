@@ -43,6 +43,9 @@ class GameView(View):
         # Get the number of mines.
         self.num_mines = controller.get_num_mines()
 
+        # Get the number of flagged cells.
+        self.num_flagged = controller.get_num_flagged()
+
         # Show the help text.
         self.show_help = False
 
@@ -79,6 +82,8 @@ class GameView(View):
 
             "g": self.toggle_goto_graphics,
             "G": self.goto_random_cell,
+
+            "n": self.toggle_flag,
 
             # Repeat the last valid input.
             enter: self.repeat_last_valid_input
@@ -352,7 +357,7 @@ class GameView(View):
         """
         Updates the stats graphics.
         """
-        mines_left = str(self.num_mines - self.controller.get_num_flagged())
+        mines_left = str(self.num_mines - self.num_flagged)
         pos_x = self.graphics.LENGTH - 1 - len(mines_left)
         pos_y = self.graphics.HEIGHT - 2
 
@@ -363,7 +368,7 @@ class GameView(View):
 
         mine_label = self.stats_graphics["mine_counter_label"]
         mine_label.set_location(Point(pos_x, pos_y))
-        mine_label.set_text("*")
+        mine_label.set_text(self.graphics.MINE_KEY)
         pos_x -= 1
 
         view_y_text = str(self.hover_y)
@@ -531,3 +536,21 @@ class GameView(View):
         self.update_stats_graphics()
         self.hide_help()
 
+    def toggle_flag(self):
+        """
+        Places or removes a flag at the hovered cell.
+        """
+        cell = self.minefield[self.hover_y][self.hover_x]
+        if cell.is_opened():
+            # TODO: Implement quick flagging.
+            return
+
+        if cell.is_flagged():
+            self.num_flagged -= 1
+            cell.set_flagged(False)
+        else:
+            self.num_flagged += 1
+            cell.set_flagged(True)
+
+        # self.update_minefield_graphics()
+        self.update_stats_graphics()

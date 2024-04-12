@@ -954,24 +954,27 @@ class Minefield(UIElement):
                             self.graphics.CARD
                         ))
                 else:
-                    if cell.is_mine():
-                        tuples.append((
-                            t_point,
-                            mine_key if self.lost else cell_key,
-                            mine_color if self.lost else dim_cell_color
-                        ))
-                    elif cell.is_flagged():
+                    if self.lost and cell.is_mine():
                         tuples.append((
                             t_point,
                             mine_key,
-                            dim_cell_color
+                            mine_color
                         ))
-                    else:
+                        continue
+
+                    if cell.is_flagged():
                         tuples.append((
                             t_point,
-                            cell_key,
-                            dim_cell_color
+                            mine_key,
+                            cell_color
                         ))
+                        continue
+
+                    tuples.append((
+                        t_point,
+                        cell_key,
+                        dim_cell_color
+                    ))
 
         # Draw the boundry indicators.
         if self.window_x > 0:
