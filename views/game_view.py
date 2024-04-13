@@ -537,7 +537,8 @@ class GameView(View):
 
         # Try to find an unopened cell.
         while tries > 0:
-            if not self.minefield[pos_y][pos_x].is_opened():
+            if (not self.minefield[pos_y][pos_x].is_opened()
+                and not self.minefield[pos_y][pos_x].is_flagged()):
                 self.hover_x = pos_x
                 self.hover_y = pos_y
                 self.controller.set_hover_x(self.hover_x)
@@ -557,7 +558,8 @@ class GameView(View):
         unopened_positions = []
         for y in range(self.difficulty.h):
             for x in range(self.difficulty.l):
-                if not self.minefield[y][x].is_opened():
+                if (not self.minefield[y][x].is_opened()
+                    and not self.minefield[y][x].is_flagged()):
                     unopened_positions.append((x, y))
 
         if len(unopened_positions) == 0:
@@ -601,15 +603,33 @@ class GameView(View):
         if self.state == State.WON or self.state == State.LOST:
             return
 
-        if self.minefield[self.hover_y][self.hover_x].is_flagged():
-            return
-
-        if self.minefield[self.hover_y][self.hover_x].is_opened():
+        hovered_cell = self.minefield[self.hover_y][self.hover_x]
+        if hovered_cell.is_flagged():
             return
 
         # Open the cell.
         cell_mound = []
         mound_position = 0
+
+        if hovered_cell.is_opened():
+            xbound = (max(0, self.hover_x - 1),
+                      min(self.difficulty.l - 1, self.hover_x + 1) + 1)
+            ybound = (max(0, self.hover_y - 1),
+                      min(self.difficulty.h - 1, self.hover_y + 1) + 1)
+            temp_mound = []
+            flagged_count = 0
+            for x_near in range(*xbound):
+                for y_near in range(*ybound):
+                    cell = self.minefield[y_near][x_near]
+                    if cell.is_flagged():
+                        flagged_count += 1
+                    if (not cell.is_opened()
+                        and not cell.is_flagged()):
+                        temp_mound.append(Point(x_near, y_near))
+
+            if flagged_count == hovered_cell.get_number():
+                cell_mound.extend(temp_mound)
+
         cell_mound.append(Point(self.hover_x, self.hover_y))
 
         while mound_position < len(cell_mound):
