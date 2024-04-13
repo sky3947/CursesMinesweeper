@@ -218,20 +218,20 @@ class GameView(View):
         screen_length = self.graphics.LENGTH // 2
         screen_height = self.graphics.HEIGHT - 2
 
-        if self.hover_x < self.window_x + 10:
-            self.window_x = max(0, self.hover_x - 10)
-        elif self.hover_x > self.window_x + (screen_length - 1) - 10:
+        if self.hover_x < self.window_x + 6:
+            self.window_x = max(0, self.hover_x - 6)
+        elif self.hover_x > self.window_x + (screen_length - 1) - 6:
             self.window_x = min(
                 self.difficulty.l - screen_length,
-                self.hover_x + 10 - screen_length + 1
+                self.hover_x + 6 - screen_length + 1
             )
 
-        if self.hover_y < self.window_y + 5:
-            self.window_y = max(0, self.hover_y - 5)
-        elif self.hover_y > self.window_y + (screen_height - 1) - 5:
+        if self.hover_y < self.window_y + 6:
+            self.window_y = max(0, self.hover_y - 6)
+        elif self.hover_y > self.window_y + (screen_height - 1) - 6:
             self.window_y = min(
                 self.difficulty.h - screen_height,
-                self.hover_y + 5 - screen_height + 1
+                self.hover_y + 6 - screen_height + 1
             )
 
     def move_camera(self, direction, amount=1):
