@@ -34,3 +34,19 @@ Option = namedtuple("Option", "l h d")
 
 # An action has a primary input and an array of secondary inputs.
 Action = namedtuple("Action", "primary secondary")
+
+def get_color(value, hovered, indicator_colors, hovered_indicator_colors):
+    """
+    Returns the color for the given value.
+
+    Args:
+        graphics (Graphics): The graphics object.
+        value (int): The value to get the color for.
+        hovered (bool): Whether or not the value is hovered.
+    """
+    if value == 0 or value > len(indicator_colors) + 1:
+        return None
+    
+    return (hovered_indicator_colors[value - 1]
+            if hovered
+            else indicator_colors[value - 1])

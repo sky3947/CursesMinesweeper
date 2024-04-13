@@ -6,7 +6,7 @@ extended to provide a variety of interactable UI.
 import textwrap
 from enum import Enum
 from abc import ABC, abstractmethod
-from utility import Point
+from utility import Point, get_color
 from graphics import Graphics
 
 class UIType(Enum):
@@ -859,6 +859,28 @@ class Minefield(UIElement):
         # Whether or not the player lost.
         self.lost = False
 
+        # Load colors for mine indicators.
+        self.indicator_colors = [
+            self.graphics.INDICATOR_BRIGHT_BLUE,
+            self.graphics.INDICATOR_GREEN,
+            self.graphics.INDICATOR_BRIGHT_RED,
+            self.graphics.INDICATOR_DARK_BLUE,
+            self.graphics.INDICATOR_DARK_RED,
+            self.graphics.INDICATOR_CYAN,
+            self.graphics.INDICATOR_BLACK,
+            self.graphics.INDICATOR_GRAY,
+        ]
+        self.hovered_indicator_colors = [
+            self.graphics.HIGHLIGHT_INDICATOR_BRIGHT_BLUE,
+            self.graphics.HIGHLIGHT_INDICATOR_GREEN,
+            self.graphics.HIGHLIGHT_INDICATOR_BRIGHT_RED,
+            self.graphics.HIGHLIGHT_INDICATOR_DARK_BLUE,
+            self.graphics.HIGHLIGHT_INDICATOR_DARK_RED,
+            self.graphics.HIGHLIGHT_INDICATOR_CYAN,
+            self.graphics.HIGHLIGHT_INDICATOR_BLACK,
+            self.graphics.HIGHLIGHT_INDICATOR_GRAY,
+        ]
+
     def set_hover_x(self, pos):
         """
         Tells the Minefield to set the hover_x value of the camera.
@@ -962,7 +984,12 @@ class Minefield(UIElement):
                         tuples.append((
                             t_point,
                             str(cell_number) + ("" if is_hovered else " "),
-                            dim_cell_color
+                            get_color(
+                                cell_number,
+                                is_hovered,
+                                self.indicator_colors,
+                                self.hovered_indicator_colors
+                            )
                         ))
                     else:
                         tuples.append((
