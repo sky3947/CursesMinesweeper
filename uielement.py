@@ -966,6 +966,9 @@ class Minefield(UIElement):
                 cell_color = (self.graphics.HIGHLIGHT_DIM_CARD
                                 if is_hovered
                                 else self.graphics.CARD)
+                flag_color = (self.graphics.HIGHLIGHT_YELLOW_CARD
+                                if is_hovered
+                                else self.graphics.YELLOW_CARD)
                 dim_cell_color = (self.graphics.HIGHLIGHT_DIM_CARD
                                   if is_hovered
                                   else self.graphics.DIM_CARD)
@@ -1010,7 +1013,7 @@ class Minefield(UIElement):
                         tuples.append((
                             t_point,
                             mine_key,
-                            cell_color
+                            flag_color
                         ))
                         continue
 

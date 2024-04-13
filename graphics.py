@@ -64,6 +64,8 @@ class Graphics:
         curses.init_pair(9, 196, 231)
         curses.init_pair(10, 226, 234)
         curses.init_pair(11, 226, 16)
+        curses.init_pair(12, 226, 234)
+        curses.init_pair(13, 226, 231)
 
         # Black text color on white background.
         self.HIGHLIGHT = curses.color_pair(1)
@@ -87,49 +89,53 @@ class Graphics:
         self.INDICATOR = curses.color_pair(10)
         # Yellow text color on a black background.
         self.YELLOW = curses.color_pair(11)
+        # Yellow text color on a dark gray background.
+        self.YELLOW_CARD = curses.color_pair(12)
+        # Yellow text color on a white background.
+        self.HIGHLIGHT_YELLOW_CARD = curses.color_pair(13)
 
         # Initialize mine indicator color options.
-        curses.init_pair(12, 33, 234)
-        curses.init_pair(13, 33, 231)
-        curses.init_pair(14, 34, 234)
-        curses.init_pair(15, 34, 231)
-        curses.init_pair(16, 160, 234)
-        curses.init_pair(17, 160, 231)
-        curses.init_pair(18, 19, 234)
-        curses.init_pair(19, 19, 231)
-        curses.init_pair(20, 88, 234)
-        curses.init_pair(21, 88, 231)
-        curses.init_pair(22, 31, 234)
-        curses.init_pair(23, 31, 231)
-        curses.init_pair(24, 16, 234)
-        curses.init_pair(25, 16, 231)
-        curses.init_pair(26, 240, 234)
-        curses.init_pair(27, 240, 231)
+        curses.init_pair(14, 33, 234)
+        curses.init_pair(15, 33, 231)
+        curses.init_pair(16, 34, 234)
+        curses.init_pair(17, 34, 231)
+        curses.init_pair(18, 160, 234)
+        curses.init_pair(19, 160, 231)
+        curses.init_pair(20, 19, 234)
+        curses.init_pair(21, 19, 231)
+        curses.init_pair(22, 88, 234)
+        curses.init_pair(23, 88, 231)
+        curses.init_pair(24, 31, 234)
+        curses.init_pair(25, 31, 231)
+        curses.init_pair(26, 16, 234)
+        curses.init_pair(27, 16, 231)
+        curses.init_pair(28, 240, 234)
+        curses.init_pair(29, 240, 231)
 
         # Bright blue text color on dark gray background.
-        self.INDICATOR_BRIGHT_BLUE = curses.color_pair(12)
-        self.HIGHLIGHT_INDICATOR_BRIGHT_BLUE = curses.color_pair(13)
+        self.INDICATOR_BRIGHT_BLUE = curses.color_pair(14)
+        self.HIGHLIGHT_INDICATOR_BRIGHT_BLUE = curses.color_pair(15)
         # Green text color on dark gray background.
-        self.INDICATOR_GREEN = curses.color_pair(14)
-        self.HIGHLIGHT_INDICATOR_GREEN = curses.color_pair(15)
+        self.INDICATOR_GREEN = curses.color_pair(16)
+        self.HIGHLIGHT_INDICATOR_GREEN = curses.color_pair(17)
         # Bright red text color on dark gray background.
-        self.INDICATOR_BRIGHT_RED = curses.color_pair(16)
-        self.HIGHLIGHT_INDICATOR_BRIGHT_RED = curses.color_pair(17)
+        self.INDICATOR_BRIGHT_RED = curses.color_pair(18)
+        self.HIGHLIGHT_INDICATOR_BRIGHT_RED = curses.color_pair(19)
         # Dark blue text color on dark gray background.
-        self.INDICATOR_DARK_BLUE = curses.color_pair(18)
-        self.HIGHLIGHT_INDICATOR_DARK_BLUE = curses.color_pair(19)
+        self.INDICATOR_DARK_BLUE = curses.color_pair(20)
+        self.HIGHLIGHT_INDICATOR_DARK_BLUE = curses.color_pair(21)
         # Dark red text color on dark gray background.
-        self.INDICATOR_DARK_RED = curses.color_pair(20)
-        self.HIGHLIGHT_INDICATOR_DARK_RED = curses.color_pair(21)
+        self.INDICATOR_DARK_RED = curses.color_pair(22)
+        self.HIGHLIGHT_INDICATOR_DARK_RED = curses.color_pair(23)
         # Cyan text color on dark gray background.
-        self.INDICATOR_CYAN = curses.color_pair(22)
-        self.HIGHLIGHT_INDICATOR_CYAN = curses.color_pair(23)
+        self.INDICATOR_CYAN = curses.color_pair(24)
+        self.HIGHLIGHT_INDICATOR_CYAN = curses.color_pair(25)
         # Black text color on dark gray background.
-        self.INDICATOR_BLACK = curses.color_pair(24)
-        self.HIGHLIGHT_INDICATOR_BLACK = curses.color_pair(25)
+        self.INDICATOR_BLACK = curses.color_pair(26)
+        self.HIGHLIGHT_INDICATOR_BLACK = curses.color_pair(27)
         # Gray text color on dark gray background.
-        self.INDICATOR_GRAY = curses.color_pair(26)
-        self.HIGHLIGHT_INDICATOR_GRAY = curses.color_pair(27)
+        self.INDICATOR_GRAY = curses.color_pair(28)
+        self.HIGHLIGHT_INDICATOR_GRAY = curses.color_pair(29)
 
     def get_inp(self):
         """
