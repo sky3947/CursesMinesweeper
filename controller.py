@@ -236,7 +236,7 @@ class Controller:
             int: The hover_y position.
         """
         return self.model.get_hover_y()
-    
+
     def get_num_flagged(self):
         """
         Gets the number of flagged cells.
