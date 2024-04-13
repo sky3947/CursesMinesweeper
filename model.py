@@ -39,8 +39,8 @@ class Model:
         # Minefield Options.
         self.options = {
             "easy": Option(10, 10, 10),
-            "medium": Option(30, 20, 15),
-            "hard": Option(60, 28, 20),
+            "medium": Option(16, 16, 15),
+            "hard": Option(30, 28, 20),
             "custom": Option(10, 10, 10),
             "custom_minimums": Option(2, 2, 1),
             "custom_maximums": Option(1024, 1024, 99)
