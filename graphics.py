@@ -149,12 +149,10 @@ class Graphics:
             inp (str): The string to draw.
             color (int, optional): the color to use. Defaults to BRIGHT.
         """
-        y, x = self.screen.getmaxyx()
-        if x < self.LENGTH or y < self.HEIGHT:
-            print('Console window is too small; please resize and try again')
-            exit(1)
-
-        self.screen.addstr(point.y, point.x, inp, color or self.BRIGHT)
+        try:
+            self.screen.addstr(point.y, point.x, inp, color or self.BRIGHT)
+        except:
+            curses.resize_term(self.HEIGHT, self.LENGTH)
 
     def refresh(self):
         """
