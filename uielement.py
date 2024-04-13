@@ -910,12 +910,19 @@ class Minefield(UIElement):
         height = len(self.minefield)
         length = len(self.minefield[0])
 
-        # Calculate the minefield window position.
-        lower_x = max(min(self.window_x, length - Graphics.LENGTH), 0)
-        upper_x = min(lower_x + Graphics.LENGTH, length)
+        screen_length = Graphics.LENGTH // 2
+        screen_height = Graphics.HEIGHT - 2
 
-        lower_y = max(min(self.window_y, height - (Graphics.HEIGHT - 2)), 0)
-        upper_y = min(lower_y + Graphics.HEIGHT - 2, height)
+        # Draw background.
+        for y in range(0, screen_height):
+            tuples.append((Point(0, y), " "*Graphics.LENGTH, self.graphics.CARD))
+
+        # Calculate the minefield window position.
+        lower_x = max(min(self.window_x, length - screen_length), 0)
+        upper_x = min(lower_x + screen_length, length)
+
+        lower_y = max(min(self.window_y, height - screen_height), 0)
+        upper_y = min(lower_y + screen_height, height)
 
         # Draw the minefield.
         for y in range(lower_y, upper_y):
@@ -925,11 +932,12 @@ class Minefield(UIElement):
                 cell = self.minefield[y][x]
                 screen_x = x - lower_x + self.point.x
                 screen_y = y - lower_y + self.point.y
-                t_point = Point(screen_x, screen_y)
+                t_point = Point(screen_x*2, screen_y)
 
                 # Character and color calculations.
-                mine_key = Graphics.MINE_KEY
-                cell_key = Graphics.CELL_KEY
+                # ("" if is_hovered else " ") optimizes curses to run better.
+                mine_key = Graphics.MINE_KEY + ("" if is_hovered else " ")
+                cell_key = Graphics.CELL_KEY + ("" if is_hovered else " ")
                 mine_color = (self.graphics.HIGHLIGHT_MINE
                                 if is_hovered
                                 else self.graphics.MINE)
@@ -953,13 +961,13 @@ class Minefield(UIElement):
                     if cell_number > 0:
                         tuples.append((
                             t_point,
-                            str(cell_number),
+                            str(cell_number) + ("" if is_hovered else " "),
                             dim_cell_color
                         ))
                     else:
                         tuples.append((
                             t_point,
-                            " ",
+                            " " + ("" if is_hovered else " "),
                             cell_color
                         ))
                 else:
@@ -1003,7 +1011,7 @@ class Minefield(UIElement):
             ))
         if upper_y < height:
             tuples.append((
-                Point(0, Graphics.HEIGHT - 3),
+                Point(0, screen_height - 1),
                 "/"*Graphics.LENGTH, self.graphics.DIM_CARD
             ))
 
@@ -1011,14 +1019,14 @@ class Minefield(UIElement):
         if (self.window_x > self.hover_x
             or (self.window_x > 0
                 and self.window_x >= self.hover_x)):
-            ind_y = min(Graphics.HEIGHT - 3,
+            ind_y = min(screen_height - 1,
                         max(0, self.hover_y - self.window_y))
             tuples.append((Point(0, ind_y), "O", self.graphics.INDICATOR))
 
-        elif (self.window_x + Graphics.LENGTH <= self.hover_x
-              or (self.window_x + Graphics.LENGTH < length
-                  and self.window_x + Graphics.LENGTH - 1 <= self.hover_x)):
-            ind_y = min(Graphics.HEIGHT - 3,
+        elif (self.window_x + screen_length <= self.hover_x
+              or (self.window_x + screen_length < length
+                  and self.window_x + screen_length - 1 < self.hover_x)):
+            ind_y = min(screen_height - 1,
                         max(0, self.hover_y - self.window_y))
             tuples.append((Point(Graphics.LENGTH - 1, ind_y), "O",
                            self.graphics.INDICATOR))
@@ -1026,16 +1034,16 @@ class Minefield(UIElement):
         elif (self.window_y > self.hover_y
               or (self.window_y > 0
                   and self.window_y >= self.hover_y)):
-            ind_x = min(Graphics.LENGTH - 1,
+            ind_x = min(screen_length - 1,
                         max(0, self.hover_x - self.window_x))
-            tuples.append((Point(ind_x, 0), "O", self.graphics.INDICATOR))
+            tuples.append((Point(ind_x*2, 0), "O", self.graphics.INDICATOR))
 
-        elif (self.window_y + (Graphics.HEIGHT - 2) <= self.hover_y
-              or (self.window_y + (Graphics.HEIGHT - 2) < height
-                  and self.window_y + (Graphics.HEIGHT - 3) <= self.hover_y)):
-            ind_x = min(Graphics.LENGTH - 1,
+        elif (self.window_y + screen_height <= self.hover_y
+              or (self.window_y + screen_height < height
+                  and self.window_y + (screen_height - 1) <= self.hover_y)):
+            ind_x = min(screen_length - 1,
                         max(0, self.hover_x - self.window_x))
-            tuples.append((Point(ind_x, Graphics.HEIGHT - 3), "O",
+            tuples.append((Point(ind_x*2, screen_height - 1), "O",
                            self.graphics.INDICATOR))
 
         return tuples

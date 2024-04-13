@@ -1,6 +1,8 @@
 """
 The game View is the main View for the game. It displays the minefield to the
-user and lets them interact with it.
+user and lets them interact with it. Cuts corners with the minefield
+manipulation. Should use controller to manipulate the model, but the server
+doesn't exist, so the model is the same as in the controller.
 """
 
 import random
@@ -213,20 +215,23 @@ class GameView(View):
         """
         Centers the camera based on hover_x and hover_y.
         """
+        screen_length = self.graphics.LENGTH // 2
+        screen_height = self.graphics.HEIGHT - 2
+
         if self.hover_x < self.window_x + 10:
             self.window_x = max(0, self.hover_x - 10)
-        elif self.hover_x > self.window_x + (self.graphics.LENGTH - 1) - 10:
+        elif self.hover_x > self.window_x + (screen_length - 1) - 10:
             self.window_x = min(
-                self.difficulty.l - self.graphics.LENGTH,
-                self.hover_x + 10 - self.graphics.LENGTH + 1
+                self.difficulty.l - screen_length,
+                self.hover_x + 10 - screen_length + 1
             )
 
         if self.hover_y < self.window_y + 5:
             self.window_y = max(0, self.hover_y - 5)
-        elif self.hover_y > self.window_y + (self.graphics.HEIGHT - 3) - 5:
+        elif self.hover_y > self.window_y + (screen_height - 1) - 5:
             self.window_y = min(
-                self.difficulty.h - (self.graphics.HEIGHT - 2),
-                self.hover_y + 5 - (self.graphics.HEIGHT - 2) + 1
+                self.difficulty.h - screen_height,
+                self.hover_y + 5 - screen_height + 1
             )
 
     def move_camera(self, direction, amount=1):
@@ -236,6 +241,9 @@ class GameView(View):
         Args:
             direction (Direction): The direction to move.
         """
+        screen_length = self.graphics.LENGTH // 2
+        screen_height = self.graphics.HEIGHT - 2
+
         if direction == Direction.U:
             self.window_y = max(0, self.window_y - amount)
             self.controller.set_last_inp("i")
@@ -243,11 +251,11 @@ class GameView(View):
             self.window_x = max(0, self.window_x - amount)
             self.controller.set_last_inp("j")
         elif direction == Direction.D:
-            self.window_y = min(self.difficulty.h - (self.graphics.HEIGHT - 2),
+            self.window_y = min(self.difficulty.h - screen_height,
                                 self.window_y + amount)
             self.controller.set_last_inp("k")
         elif direction == Direction.R:
-            self.window_x = min(self.difficulty.l - self.graphics.LENGTH,
+            self.window_x = min(self.difficulty.l - screen_length,
                                 self.window_x + amount)
             self.controller.set_last_inp("l")
 
@@ -319,12 +327,10 @@ class GameView(View):
         """
         height = self.difficulty.h
         length = self.difficulty.l
-        centered_x = (self.graphics.LENGTH - length)//2
-        centered_y = ((self.graphics.HEIGHT - 2) - height)//2
-        centered = Point(
-            0 if length > self.graphics.LENGTH else centered_x,
-            0 if height > (self.graphics.HEIGHT - 2) else centered_y
-        )
+
+        centered_x = max(0, ((self.graphics.LENGTH // 2) - length) // 2)
+        centered_y = max(0, ((self.graphics.HEIGHT - 2) - height)//2)
+        centered = Point(centered_x, centered_y)
 
         self.minefield_ui = Minefield(centered, self.minefield)
         self.center_camera()
